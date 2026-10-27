@@ -1,0 +1,54 @@
+/* Member 3: Shop Catalogue & Product Card */
+.sh-product-card {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+.sh-product-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.08);
+    border-color: var(--sh-orange);
+}
+.sh-product-img {
+    height: 170px;
+    background: #fafafa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 10px;
+}
+.sh-product-img img {
+    max-height: 145px;
+    max-width: 100%;
+    object-fit: contain;
+    transition: transform .3s ease;
+}
+.sh-product-card:hover .sh-product-img img { transform: scale(1.06); }
+.sh-size-chip {
+    display: inline-block;
+    padding: 2px 7px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    border: 1px solid var(--sh-border);
+    border-radius: 4px;
+    cursor: pointer;
+    background: transparent;
+    transition: all .15s ease;
+}
+.sh-size-chip.active, .sh-size-chip:hover {
+    border-color: var(--sh-orange);
+    background: var(--sh-orange);
+    color: #fff;
+}
+.sh-filter-box {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 12px;
+    padding: 1.25rem;
+}

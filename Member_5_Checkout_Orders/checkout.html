@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Checkout — Shoe Haven</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../Member_1_Core_Layout/assets/css/core.css">
+    <link rel="stylesheet" href="css/checkout.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg sh-navbar">
+        <div class="container">
+            <a class="navbar-brand" href="../Member_2_Home_Info/index.html">👟 Shoe<span>Haven</span></a>
+            <div class="text-white small"><i class="bi bi-shield-lock-fill text-success"></i> 256-bit Secure Checkout</div>
+        </div>
+    </nav>
+
+    <div class="container py-4" style="max-width: 900px;">
+        <h3 class="fw-bold mb-4">Complete Your Order</h3>
+
+        <form onsubmit="submitCheckout(event)">
+            <!-- 1. Delivery Details -->
+            <div class="card p-4 rounded-4 border mb-4 shadow-sm bg-body-tertiary">
+                <h5 class="fw-bold mb-3">1. Delivery Destination (Mbarara Community)</h5>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Full Recipient Name</label>
+                        <input type="text" class="form-control" required value="Joshua Tumusiime">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small fw-bold">Phone Number (For Delivery Rider)</label>
+                        <input type="tel" class="form-control" required value="+256 772 123 456">
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label small fw-bold">Drop-off Address</label>
+                        <select class="form-select mb-2" required>
+                            <option selected>MUST Kihumuro Campus — Hostel Block B, Room 12</option>
+                            <option>MUST Town Campus — Main Gate</option>
+                            <option>Kakoba Central — Near Market Stalls</option>
+                            <option>Kamukuzi Residential Area</option>
+                            <option>Nyamitanga Hill Road</option>
+                        </select>
+                        <input type="text" class="form-control form-control-sm" placeholder="Additional landmark or hostel block note...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- 2. Payment Method -->
+            <div class="card p-4 rounded-4 border mb-4 shadow-sm bg-body-tertiary">
+                <h5 class="fw-bold mb-3">2. Choose Payment Method</h5>
+                <div class="sh-payment-option active" onclick="selectPaymentMethod(this, 'momo')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-bold"><i class="bi bi-phone-fill text-warning me-2"></i> MTN Mobile Money</div>
+                        <span class="badge bg-warning text-dark">Instant USSD PIN</span>
+                    </div>
+                </div>
+                <div class="sh-payment-option" onclick="selectPaymentMethod(this, 'airtel')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-bold"><i class="bi bi-phone-fill text-danger me-2"></i> Airtel Money</div>
+                        <span class="badge bg-danger">Instant USSD PIN</span>
+                    </div>
+                </div>
+                <div class="sh-payment-option" onclick="selectPaymentMethod(this, 'cod')">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="fw-bold"><i class="bi bi-cash-stack text-success me-2"></i> Cash on Delivery</div>
+                        <small class="text-muted">Pay dispatch rider on arrival</small>
+                    </div>
+                </div>
+
+                <!-- MoMo Phone Prompt -->
+                <div id="momoInputBox" class="mt-3 p-3 rounded-3 border bg-white">
+                    <label class="form-label small fw-bold">Mobile Money Number</label>
+                    <input type="tel" class="form-control" value="0772123456" placeholder="077xxxxxxx / 075xxxxxxx">
+                    <small class="text-muted">A payment approval prompt will pop up on your mobile handset immediately.</small>
+                </div>
+            </div>
+
+            <button type="submit" id="btnSubmitOrder" class="btn btn-sh-orange btn-lg w-100 py-3 fw-bold fs-5 shadow">
+                Authorize &amp; Place Order (UGX 185,000) →
+            </button>
+        </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../Member_1_Core_Layout/assets/js/core.js"></script>
+    <script src="js/checkout.js"></script>
+</body>
+</html>

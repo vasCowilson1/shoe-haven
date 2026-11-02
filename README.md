@@ -61,18 +61,25 @@ The checkout redirects customers to Pesapal. Configure public callback and IPN U
 
 Bootstrap 5 and Shoe Haven styles are built with Vite. Source CSS and JavaScript are in `resources/css` and `resources/js`; product and storefront images are in `public/images`.
 
-## Vercel deployment
+## Laravel Cloud deployment
 
-The root `Dockerfile`, `Caddyfile`, and `vercel.json` deploy Laravel with FrankenPHP on Vercel's container runtime. Link the project with `vercel link` and connect the GitHub repository with `vercel git connect https://github.com/vasCowilson1/shoe-haven`.
+Laravel Cloud provides a native PHP runtime for this application; Docker is not required. Create a Laravel Cloud application connected to this GitHub repository, select PHP 8.2 or newer, and choose a region close to the Neon database.
 
-Configure these Vercel environment variables before deploying:
+Configure the environment build command as:
 
-- `APP_KEY` (generate a unique key with `php artisan key:generate --show`)
-- `APP_ENV=production`, `APP_DEBUG=false`, and `APP_URL` (the deployed HTTPS origin)
-- `DATABASE_URL` (the Neon connection string; keep it secret)
-- `DB_CONNECTION=pgsql`, `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=sync`, and `LOG_CHANNEL=stderr`
+```bash
+composer install --no-dev && npm ci --audit false && npm run build && php artisan optimize
+```
 
-Run database migrations as a release step with `php artisan migrate --force`; do not run migrations when each container starts. Vercel's container filesystem is not durable, so configure an S3-compatible object store before relying on admin product or hero image uploads. Set up separate database credentials for preview deployments rather than pointing previews at production data.
+Configure the deploy command as:
+
+```bash
+php artisan migrate --force
+```
+
+Set production environment variables in Laravel Cloud, including a unique `APP_KEY`, `APP_ENV=production`, `APP_DEBUG=false`, the public `APP_URL`, `DB_CONNECTION=pgsql`, `DB_SSLMODE=require`, and the secret Neon `DATABASE_URL`. Set `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=sync`, and `LOG_CHANNEL=stderr`. Never commit `.env` or paste secret values into source control.
+
+The Neon schema and sample catalog are already provisioned. The deploy command applies any pending migrations; do not run `migrate:fresh` against the hosted database. Laravel Cloud filesystems are ephemeral, so attach object storage before relying on admin product or hero image uploads. Configure Google and Pesapal production credentials and callback URLs separately before enabling those integrations.
 
 ## Tests
 
@@ -87,5 +94,6 @@ The test suite uses a fake Pesapal service; it does not make live payment reques
 - Set `APP_ENV=production` and `APP_DEBUG=false`.
 - Configure a production database, mail provider, and HTTPS.
 - Configure and verify production Pesapal callback/IPN URLs and credentials.
-- Run `npm run build` and `php artisan storage:link`.
+- Configure persistent object storage for admin uploads.
+- Run `npm run build`.
 - Change any seeded administrator password before deployment.

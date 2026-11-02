@@ -307,57 +307,89 @@ class RealisticProductsSeeder extends Seeder
             'Designed with your comfort in mind — flexible sole, padded collar, and breathable lining for long-lasting wear.',
         ];
 
+        $createdAt = now();
+        $productRows = [];
         foreach ($products as $data) {
-            $imgNum = $imgCounter++;
-
             $catId = $data[5];
             $realCatId = $catIdMap[$catId] ?? $catId;
             $cat = $cats->get($realCatId);
             if (!$cat) continue;
 
-            $product = Product::create([
+            $productRows[] = [
                 'name' => $data[0],
                 'brand' => $data[6] ?? $brands[array_rand($brands)],
                 'price' => $data[1],
                 'original_price' => $data[2],
-                'image' => "images/products/shoe-{$imgNum}.jpg",
+                'image' => 'images/products/shoe-' . $imgCounter++ . '.jpg',
                 'category_id' => $realCatId,
                 'is_new' => $data[4],
                 'discount' => $data[3],
-            ]);
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ];
+        }
 
-            ProductStock::create([
+        Product::query()->insert($productRows);
+
+        $productsByCategoryAndName = Product::query()
+            ->whereIn('name', array_column($productRows, 'name'))
+            ->get(['id', 'name', 'brand', 'category_id'])
+            ->keyBy(fn (Product $product): string => $product->category_id . ':' . $product->name);
+
+        $stockRows = [];
+        $sizeStockRows = [];
+        $imageRows = [];
+        $descriptionRows = [];
+
+        foreach ($productRows as $productData) {
+            $product = $productsByCategoryAndName->get($productData['category_id'] . ':' . $productData['name']);
+            if (!$product) continue;
+
+            $category = $cats->get($product->category_id);
+            $stockRows[] = [
                 'product_id' => $product->id,
                 'quantity' => rand(10, 80),
-            ]);
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ];
 
+            $catId = array_search($productData['category_id'], $catIdMap, true);
             $sizes = $sizeRanges[$catId] ?? ['39','40','41','42','43'];
             foreach ($sizes as $size) {
-                ProductSizeStock::create([
+                $sizeStockRows[] = [
                     'product_id' => $product->id,
                     'size' => $size,
                     'quantity' => rand(2, 15),
-                ]);
+                    'created_at' => $createdAt,
+                    'updated_at' => $createdAt,
+                ];
             }
 
             $offset = (($product->id - 1) * 5) % count($galleryPool);
-            $gallery = array_slice($galleryPool, $offset, 5);
-            foreach ($gallery as $i => $imageUrl) {
-                ProductImage::create([
+            for ($i = 0; $i < 5; $i++) {
+                $imageRows[] = [
                     'product_id' => $product->id,
-                    'image_url' => $imageUrl,
+                    'image_url' => $galleryPool[($offset + $i) % count($galleryPool)],
                     'sort_order' => $i + 1,
-                ]);
+                    'created_at' => $createdAt,
+                ];
             }
 
-            ProductDescription::create([
+            $descriptionRows[] = [
                 'product_id' => $product->id,
                 'description' => $descriptions[$product->id % count($descriptions)]
                     . ' ' . $product->name . ' by ' . $product->brand
-                    . ' — a ' . $cat->name . ' essential at an unbeatable price.',
-            ]);
+                    . ' — a ' . $category->name . ' essential at an unbeatable price.',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt,
+            ];
         }
 
-        $this->command->info('Seeded ' . count($products) . ' realistic products with unique images & sizes.');
+        ProductStock::query()->insert($stockRows);
+        ProductSizeStock::query()->insert($sizeStockRows);
+        ProductImage::query()->insert($imageRows);
+        ProductDescription::query()->insert($descriptionRows);
+
+        $this->command->info('Seeded ' . count($productRows) . ' realistic products with unique images & sizes.');
     }
 }

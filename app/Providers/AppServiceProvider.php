@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Database\Connectors\NeonPostgresConnector;
 use App\Models\Category;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\URL;
@@ -12,7 +13,7 @@ class AppServiceProvider extends ServiceProvider
 {
     public function register(): void
     {
-        //
+        $this->app->bind('db.connector.pgsql', NeonPostgresConnector::class);
     }
 
     public function boot(): void

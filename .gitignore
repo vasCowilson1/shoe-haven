@@ -28,3 +28,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+.neon
+.vercel
+
+.vercel
+.env*

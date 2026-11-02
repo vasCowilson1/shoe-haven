@@ -26,7 +26,7 @@ copy .env.example .env
 php artisan key:generate
 ```
 
-Create a PostgreSQL database named `shoe_haven` (or update `DB_DATABASE` and the connection settings in `.env`), then run:
+Create a PostgreSQL database named `shoe_haven` (or update `DB_DATABASE` and the connection settings in `.env`). For Neon, run `neon init` from the repository root; Laravel reads the `DATABASE_URL` populated by the Neon CLI and derives the endpoint ID needed by older PostgreSQL client libraries. For another PostgreSQL host, set `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` instead. Then run:
 
 ```bash
 php artisan migrate --seed
@@ -60,6 +60,19 @@ The checkout redirects customers to Pesapal. Configure public callback and IPN U
 ## Frontend
 
 Bootstrap 5 and Shoe Haven styles are built with Vite. Source CSS and JavaScript are in `resources/css` and `resources/js`; product and storefront images are in `public/images`.
+
+## Vercel deployment
+
+The root `Dockerfile`, `Caddyfile`, and `vercel.json` deploy Laravel with FrankenPHP on Vercel's container runtime. Link the project with `vercel link` and connect the GitHub repository with `vercel git connect https://github.com/vasCowilson1/shoe-haven`.
+
+Configure these Vercel environment variables before deploying:
+
+- `APP_KEY` (generate a unique key with `php artisan key:generate --show`)
+- `APP_ENV=production`, `APP_DEBUG=false`, and `APP_URL` (the deployed HTTPS origin)
+- `DATABASE_URL` (the Neon connection string; keep it secret)
+- `DB_CONNECTION=pgsql`, `SESSION_DRIVER=database`, `CACHE_STORE=database`, `QUEUE_CONNECTION=sync`, and `LOG_CHANNEL=stderr`
+
+Run database migrations as a release step with `php artisan migrate --force`; do not run migrations when each container starts. Vercel's container filesystem is not durable, so configure an S3-compatible object store before relying on admin product or hero image uploads. Set up separate database credentials for preview deployments rather than pointing previews at production data.
 
 ## Tests
 

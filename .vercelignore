@@ -1,0 +1,14 @@
+.git
+.vercel
+.env
+.env.*
+!.env.example
+.neon
+node_modules
+vendor
+tests
+storage
+public/build
+public/hot
+public/storage
+database/database.sqlite

@@ -3,6 +3,14 @@
 use Illuminate\Support\Str;
 use Pdo\Mysql;
 
+$databaseUrl = env('DB_URL', env('DATABASE_URL'));
+$databaseHost = $databaseUrl ? parse_url($databaseUrl, PHP_URL_HOST) : null;
+$neonEndpointId = env('NEON_ENDPOINT_ID');
+
+if (! $neonEndpointId && $databaseHost && str_ends_with($databaseHost, '.neon.tech')) {
+    $neonEndpointId = preg_replace('/-pooler$/', '', explode('.', $databaseHost, 2)[0]);
+}
+
 return [
 
     /*
@@ -86,7 +94,8 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
-            'url' => env('DB_URL'),
+            'url' => $databaseUrl,
+            'neon_endpoint_id' => $neonEndpointId,
             'host' => env('DB_HOST', '127.0.0.1'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'laravel'),

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In — Shoe Haven</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="../Member_1_Core_Layout/assets/css/core.css">
+</head>
+<body class="d-flex align-items-center justify-content-center min-vh-100 py-5">
+    <div class="card p-4 rounded-4 border shadow-sm" style="max-width: 420px; width: 100%;">
+        <div class="text-center mb-4">
+            <a href="../Member_2_Home_Info/index.html" class="text-decoration-none fs-3 fw-bold text-dark">👟 Shoe<span style="color:var(--sh-orange);">Haven</span></a>
+            <p class="text-secondary small mt-1">Sign in to your customer account</p>
+        </div>
+        <form onsubmit="event.preventDefault(); window.location.href='profile.html';">
+            <div class="mb-3">
+                <label class="form-label small fw-bold">Email / Phone Number</label>
+                <input type="text" class="form-control" required value="joshua@must.ac.ug">
+            </div>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <label class="form-label small fw-bold">Password</label>
+                    <a href="forgot-password.html" class="small text-decoration-none text-danger">Forgot?</a>
+                </div>
+                <input type="password" class="form-control" required value="password123">
+            </div>
+            <button type="submit" class="btn btn-sh-orange w-100 py-2 fw-bold mb-3">Sign In</button>
+            <div class="text-center small">
+                Don't have an account? <a href="register.html" class="fw-bold text-danger text-decoration-none">Create Account</a>
+            </div>
+        </form>
+    </div>
+    <script src="../Member_1_Core_Layout/assets/js/core.js"></script>
+</body>
+</html>

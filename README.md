@@ -1,19 +1,19 @@
-# Member 3: Shop Catalogue & Product Inspection
-**Owner:** Member 3
-**Role:** Complete footwear catalogue (`shop.html`), category filter sidebar, responsive shoe cards with size pickers, and product detail inspection (`product-detail.html`).
+# Member 6: Authentication & Profile Management
+**Owner:** Member 6
+**Role:** Customer sign in (`login.html`), account registration (`register.html`), and user profile management dashboard with address book (`profile.html`).
 
 ---
 
-## 🚀 How Member 3 Pushes to GitHub
+## 🚀 How Member 6 Pushes to GitHub
 
 ```bash
-cd Member_3_Shop_Catalogue
+cd Member_6_Auth_Profile
 git init
 git remote add origin https://github.com/vasCowilson1/shoe-haven.git
-git checkout -b feature/member-3-shop-catalogue
+git checkout -b feature/member-6-auth-profile
 git add .
-git commit -m "feat(shop): implement footwear catalogue, filters, EU size selectors and product detail"
-git push -u origin feature/member-3-shop-catalogue
+git commit -m "feat(auth): implement customer signin, registration, and user profile management"
+git push -u origin feature/member-6-auth-profile
 ```
 
 Then open a Pull Request into `main` on GitHub!

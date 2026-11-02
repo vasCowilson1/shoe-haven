@@ -1,0 +1,61 @@
+/* Member 4: Shopping Cart & Wishlist */
+.sh-cart-item {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+}
+.sh-cart-thumb {
+    width: 90px;
+    height: 90px;
+    object-fit: contain;
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 6px;
+    flex-shrink: 0;
+}
+.sh-qty-stepper {
+    display: inline-flex;
+    align-items: center;
+    border: 1px solid var(--sh-border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+.sh-qty-btn {
+    border: none;
+    background: var(--sh-bg);
+    color: var(--sh-text-primary);
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background .15s;
+}
+.sh-qty-btn:hover { background: #e2e8f0; }
+.sh-qty-val {
+    width: 38px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+.sh-summary-card {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+.sh-free-delivery-tracker {
+    background: var(--sh-orange-light);
+    border: 1px dashed var(--sh-orange);
+    border-radius: 10px;
+    padding: 0.75rem 1rem;
+    color: var(--sh-black);
+    font-size: 0.88rem;
+}

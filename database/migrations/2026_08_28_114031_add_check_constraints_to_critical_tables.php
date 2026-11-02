@@ -7,6 +7,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // orders.status — only these statuses are valid in the application
         DB::statement("
             ALTER TABLE orders ADD CONSTRAINT orders_status_check
@@ -28,7 +32,7 @@ return new class extends Migration
         // orders.payment_method — stored values from CheckoutController
         DB::statement("
             ALTER TABLE orders ADD CONSTRAINT orders_payment_method_check
-            CHECK (payment_method IN ('MTN Mobile Money','Airtel Money','COD','card','bank_transfer'))
+            CHECK (payment_method IN ('Pesapal','pesapal','MTN Mobile Money','Airtel Money','COD','card','bank_transfer','Visa','Mastercard','mobile_money'))
         ");
 
         // order_items.quantity must be at least 1
@@ -64,6 +68,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         $constraints = [
             'orders' => ['orders_status_check', 'orders_payment_status_check', 'orders_total_amount_check', 'orders_payment_method_check'],
             'order_items' => ['order_items_quantity_check', 'order_items_price_check'],

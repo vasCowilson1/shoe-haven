@@ -19,6 +19,6 @@ class UpdateProductImagesSeeder extends Seeder
             $product->update(['image' => "images/products/shoe-{$num}.jpg"]);
         }
 
-        $this->command->info('Updated '.count($products).' products with varied images.');
+        $this->command->info('Updated ' . count($products) . ' products with varied images.');
     }
 }

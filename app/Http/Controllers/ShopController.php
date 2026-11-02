@@ -30,8 +30,8 @@ class ShopController extends Controller
             $search = $request->string('search');
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('brand', 'like', "%{$search}%")
-                    ->orWhereHas('category', fn ($c) => $c->where('name', 'like', "%{$search}%"));
+                  ->orWhere('brand', 'like', "%{$search}%")
+                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$search}%"));
             });
         }
 
@@ -40,16 +40,11 @@ class ShopController extends Controller
         $sort = in_array($sort, $allowedSorts) ? $sort : 'latest';
 
         switch ($sort) {
-            case 'oldest': $query->oldest();
-                break;
-            case 'price_asc': $query->orderBy('price');
-                break;
-            case 'price_desc': $query->orderBy('price', 'desc');
-                break;
-            case 'name_asc': $query->orderBy('name');
-                break;
-            case 'name_desc': $query->orderBy('name', 'desc');
-                break;
+            case 'oldest': $query->oldest(); break;
+            case 'price_asc': $query->orderBy('price'); break;
+            case 'price_desc': $query->orderBy('price', 'desc'); break;
+            case 'name_asc': $query->orderBy('name'); break;
+            case 'name_desc': $query->orderBy('name', 'desc'); break;
             default: $query->latest();
         }
 
@@ -65,7 +60,7 @@ class ShopController extends Controller
         ]);
     }
 
-    public function show(Product $product, Request $request)
+    public function show(Product $product, \Illuminate\Http\Request $request)
     {
         $product->load('category', 'stock', 'description', 'sizeStock', 'images');
 
@@ -87,8 +82,8 @@ class ShopController extends Controller
             ->unique()
             ->take(9)
             ->toArray();
-        $recent = array_diff($recent, [(string) $product->id]);
-        array_unshift($recent, (string) $product->id);
+        $recent = array_diff($recent, [(string)$product->id]);
+        array_unshift($recent, (string)$product->id);
         $recent = array_slice($recent, 0, 10);
         $cookie = cookie('recently_viewed', implode(',', $recent), 60 * 24 * 7);
 
@@ -109,7 +104,7 @@ class ShopController extends Controller
             ->unique()
             ->toArray();
 
-        $products = ! empty($recentIds)
+        $products = !empty($recentIds)
             ? Product::with('category')->whereIn('id', $recentIds)->get()
                 ->sortBy(fn ($product) => array_search($product->id, $recentIds))->values()
             : collect();

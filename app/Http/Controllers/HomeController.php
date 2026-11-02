@@ -32,7 +32,7 @@ class HomeController extends Controller
             ->unique()
             ->take(8)
             ->toArray();
-        $recentProducts = ! empty($recentIds)
+        $recentProducts = !empty($recentIds)
             ? Product::whereIn('id', $recentIds)->get()
                 ->sortBy(fn ($product) => array_search($product->id, $recentIds))->values()
             : collect();

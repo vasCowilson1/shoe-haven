@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Product extends Model
 {
     use HasFactory;
-
     protected $fillable = ['name', 'brand', 'price', 'original_price', 'image', 'category_id', 'is_new', 'discount'];
 
     public function category(): BelongsTo

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Wishlist;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class WishlistController extends Controller
@@ -19,6 +20,10 @@ class WishlistController extends Controller
 
     public function toggle(Product $product)
     {
+        if (!Auth::check()) {
+            return redirect()->route('login');
+        }
+
         $existing = Wishlist::where('user_id', Auth::id())
             ->where('product_id', $product->id)
             ->first();

@@ -4,12 +4,12 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Models\Profile;
-use App\Support\DeliveryLocations;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\View\View;
+use App\Support\DeliveryLocations;
 
 class ProfileController extends Controller
 {
@@ -63,14 +63,14 @@ class ProfileController extends Controller
         ]);
 
         if (($data['delivery_region'] ?? null) || ($data['delivery_district'] ?? null) || ($data['delivery_area'] ?? null)) {
-            if (! DeliveryLocations::isValid($data['delivery_region'] ?? '', $data['delivery_district'] ?? '', $data['delivery_area'] ?? '')) {
+            if (!DeliveryLocations::isValid($data['delivery_region'] ?? '', $data['delivery_district'] ?? '', $data['delivery_area'] ?? '')) {
                 return back()->withErrors(['delivery_area' => 'Please select a valid delivery region, district and area.'])->withInput();
             }
         }
 
         $profile = $request->user()->profile;
 
-        if (! $profile) {
+        if (!$profile) {
             $profile = new Profile(['user_id' => $request->user()->id]);
         }
 

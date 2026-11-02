@@ -46,11 +46,11 @@ class RealisticProductsSeeder extends Seeder
         ];
 
         $sizeRanges = [
-            1 => ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45'],
-            3 => ['38', '39', '40', '41', '42', '43', '44', '45'],
-            4 => ['34', '35', '36', '37', '38', '39', '40', '41', '42'],
-            5 => ['24', '25', '26', '27', '28', '29', '30', '31', '32', '33', '34'],
-            6 => ['38', '39', '40', '41', '42', '43', '44', '45'],
+            1 => ['36','37','38','39','40','41','42','43','44','45'],
+            3 => ['38','39','40','41','42','43','44','45'],
+            4 => ['34','35','36','37','38','39','40','41','42'],
+            5 => ['24','25','26','27','28','29','30','31','32','33','34'],
+            6 => ['38','39','40','41','42','43','44','45'],
         ];
 
         $brands = ['NikeStyle', 'AdidasPro', 'PumaForce', 'VansComfy', 'FormalPlus', 'SoftStep', 'TimberWalk', 'ClassySole', 'TinyFeet'];
@@ -313,9 +313,7 @@ class RealisticProductsSeeder extends Seeder
             $catId = $data[5];
             $realCatId = $catIdMap[$catId] ?? $catId;
             $cat = $cats->get($realCatId);
-            if (! $cat) {
-                continue;
-            }
+            if (!$cat) continue;
 
             $product = Product::create([
                 'name' => $data[0],
@@ -333,7 +331,7 @@ class RealisticProductsSeeder extends Seeder
                 'quantity' => rand(10, 80),
             ]);
 
-            $sizes = $sizeRanges[$catId] ?? ['39', '40', '41', '42', '43'];
+            $sizes = $sizeRanges[$catId] ?? ['39','40','41','42','43'];
             foreach ($sizes as $size) {
                 ProductSizeStock::create([
                     'product_id' => $product->id,
@@ -355,11 +353,11 @@ class RealisticProductsSeeder extends Seeder
             ProductDescription::create([
                 'product_id' => $product->id,
                 'description' => $descriptions[$product->id % count($descriptions)]
-                    .' '.$product->name.' by '.$product->brand
-                    .' — a '.$cat->name.' essential at an unbeatable price.',
+                    . ' ' . $product->name . ' by ' . $product->brand
+                    . ' — a ' . $cat->name . ' essential at an unbeatable price.',
             ]);
         }
 
-        $this->command->info('Seeded '.count($products).' realistic products with unique images & sizes.');
+        $this->command->info('Seeded ' . count($products) . ' realistic products with unique images & sizes.');
     }
 }

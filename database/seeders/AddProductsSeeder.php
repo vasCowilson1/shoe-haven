@@ -63,16 +63,12 @@ class AddProductsSeeder extends Seeder
 
         foreach ($newProducts as $catId => $products) {
             $cat = $categories->get($catId);
-            if (! $cat) {
-                continue;
-            }
+            if (!$cat) continue;
 
             $existingCount = Product::where('category_id', $catId)->count();
             $needed = $target - $existingCount;
 
-            if ($needed <= 0) {
-                continue;
-            }
+            if ($needed <= 0) continue;
 
             $toAdd = array_slice($products, 0, $needed);
 
@@ -86,7 +82,7 @@ class AddProductsSeeder extends Seeder
                         'brand' => $data['brand'],
                         'price' => $data['price'],
                         'original_price' => $data['original_price'],
-                        'image' => 'images/products/shoe-'.$imgNum.'.jpg',
+                        'image' => 'images/products/shoe-' . $imgNum . '.jpg',
                         'category_id' => $catId,
                         'is_new' => $data['is_new'],
                         'discount' => $data['discount'],

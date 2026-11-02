@@ -51,7 +51,7 @@ class ShopSeeder extends Seeder
         $products = [];
         foreach ($productDefs as $i => $data) {
             $imgIndex = ($i % 12) + 1;
-            $data['image'] = 'images/products/shoe-'.$imgIndex.'.jpg';
+            $data['image'] = 'images/products/shoe-' . $imgIndex . '.jpg';
             $products[] = $data;
         }
 

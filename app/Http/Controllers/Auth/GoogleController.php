@@ -30,7 +30,7 @@ class GoogleController extends Controller
 
             $user = User::where('email', $googleUser->getEmail())->first();
 
-            if (! $user) {
+            if (!$user) {
                 $user = User::create([
                     'name' => $googleUser->getName() ?? $googleUser->getNickname() ?? 'Google User',
                     'email' => $googleUser->getEmail(),

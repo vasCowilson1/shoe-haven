@@ -55,12 +55,7 @@ class CartController extends Controller
 
         if ($product->sizeStock->isNotEmpty()) {
             if ($size === null) {
-                $defaultSizeStock = $product->sizeStock->where('quantity', '>', 0)->sortBy('size')->first();
-                if ($defaultSizeStock) {
-                    $size = (string) $defaultSizeStock->size;
-                } else {
-                    throw ValidationException::withMessages(['size' => 'This product is currently out of stock.']);
-                }
+                throw ValidationException::withMessages(['size' => 'Please select a size.']);
             }
 
             $sizeStock = $product->sizeStock->firstWhere('size', $size);

@@ -1,0 +1,161 @@
+/* Member 2: Home Storefront & Information Pages */
+.sh-hero {
+    background: #14141a;
+    position: relative;
+    overflow: hidden;
+    padding: 5rem 0 4.5rem;
+}
+.sh-hero .carousel-inner {
+    min-height: 430px;
+    display: flex;
+    align-items: center;
+}
+.sh-hero .carousel-item {
+    transition: transform .6s ease-in-out, opacity .6s ease-in-out;
+}
+.sh-hero h1,
+.sh-hero h2 {
+    max-width: 580px;
+    margin-bottom: 1.25rem;
+    font-size: clamp(2.5rem, 5vw, 4.25rem);
+    line-height: 1.05;
+    letter-spacing: -0.045em;
+}
+.sh-hero p {
+    max-width: 540px;
+    font-size: clamp(1rem, 1.5vw, 1.25rem);
+    line-height: 1.65;
+}
+.sh-hero-image {
+    width: 100%;
+    height: 390px;
+    object-fit: cover;
+    border-radius: 1.25rem;
+    box-shadow: 0 1.5rem 3rem rgba(0,0,0,0.35);
+}
+.sh-hero-badge {
+    background: #fff;
+    color: #14141a;
+    border-radius: 14px;
+    padding: 0.85rem 1.2rem;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.25);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+}
+.sh-strip {
+    background: var(--sh-orange);
+    color: #fff;
+    padding: 1.25rem 0;
+}
+.sh-strip i { font-size: 1.7rem; margin-bottom: 4px; }
+.sh-cat-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    height: 280px;
+    display: flex;
+    align-items: flex-end;
+    text-decoration: none;
+    transition: transform .3s ease;
+}
+.sh-cat-card:hover { transform: translateY(-4px); }
+.sh-cat-card img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .4s ease;
+}
+.sh-cat-card:hover img { transform: scale(1.08); }
+.sh-cat-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(20,20,26,0.88), rgba(20,20,26,0.1));
+}
+.sh-cat-card .label {
+    position: relative;
+    z-index: 2;
+    padding: 1.2rem;
+    color: #fff;
+}
+.sh-promo-banner {
+    background: linear-gradient(135deg, #ff6600, #e65c00);
+    border-radius: 20px;
+    color: #fff;
+    padding: 3rem 2rem;
+}
+.sh-section {
+    padding-top: 5.5rem;
+    padding-bottom: 5.5rem;
+}
+.sh-section-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+}
+.sh-section-heading h2 {
+    margin-bottom: .5rem;
+    font-size: clamp(1.8rem, 3vw, 2.75rem);
+    letter-spacing: -0.035em;
+}
+.sh-about-section {
+    padding: 1.5rem 0 5.5rem;
+}
+.sh-about-image {
+    width: 100%;
+    height: 420px;
+    object-fit: cover;
+    border-radius: 1rem;
+}
+.sh-contact-section {
+    padding: 5.5rem 0;
+}
+.sh-faq-section {
+    padding-bottom: 6rem;
+}
+.sh-testimonial-card {
+    background: var(--sh-surface);
+    border: 1px solid var(--sh-border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    height: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .sh-hero {
+        padding: 3.5rem 0;
+    }
+
+    .sh-hero .carousel-inner {
+        min-height: 650px;
+    }
+
+    .sh-hero-image {
+        height: 250px;
+    }
+
+    .sh-section {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+    }
+
+    .sh-section-heading {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: .75rem;
+        margin-bottom: 1.75rem;
+    }
+
+    .sh-cat-card {
+        height: 220px;
+    }
+
+    .sh-contact-section {
+        padding: 4rem 0;
+    }
+}

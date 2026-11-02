@@ -19,6 +19,9 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('shop.index') && !request()->filled('category') && !request()->filled('brand') && !request()->filled('search') ? 'active' : '' }}" href="{{ route('shop.index') }}">Shop All</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary border-0" aria-label="Toggle theme" title="Toggle light/dark mode" style="color: rgba(255,255,255,0.7); font-size: 1.1rem;">
+                    <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
+                </button>
                 <a href="{{ route('cart.index') }}" class="sh-cart-icon">
                     <i class="bi bi-cart3"></i>
                     @if ($cartCount > 0)

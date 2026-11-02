@@ -18,7 +18,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\NewsletterController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\PesapalController;
+use App\Http\Controllers\PesajetController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ShopController;
@@ -100,15 +100,15 @@ Route::middleware('auth')->name('orders.')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
-| Pesapal Payment Gateway
+| PesaJet Payment Gateway
 |--------------------------------------------------------------------------
 */
 
-Route::get('/pesapal/callback', [PesapalController::class, 'callback'])->name('pesapal.callback');
-Route::match(['get', 'post'], '/pesapal/ipn', [PesapalController::class, 'ipn'])->name('pesapal.ipn');
+Route::post('/pesajet/callback', [PesajetController::class, 'callback'])->name('pesajet.callback');
 
 Route::middleware('auth')->group(function () {
-    Route::get('/orders/{order}/pay', [PesapalController::class, 'retry'])->name('orders.pay');
+    Route::get('/orders/{order}/pay', [PesajetController::class, 'retry'])->name('orders.pay');
+    Route::get('/orders/{order}/pay/status', [PesajetController::class, 'status'])->name('orders.pay.status');
 });
 
 /*

@@ -18,7 +18,7 @@ class Order extends Model
         'status', 'payment_status', 'transaction_id', 'payment_initiated_at',
         'shipping_name', 'shipping_address', 'shipping_city',
         'shipping_region', 'shipping_district', 'shipping_area', 'shipping_landmark', 'shipping_phone',
-        'pesapal_tracking_id',
+        'pesajet_reference',
     ];
 
     public function user(): BelongsTo

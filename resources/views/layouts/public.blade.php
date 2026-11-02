@@ -1,11 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#14141a">
     <title>@yield('title', config('app.name', 'Shoe Haven'))</title>
+    {{-- Apply saved theme before CSS renders to prevent flash --}}
+    <script>
+        (function() {
+            var saved = localStorage.getItem('sh-theme') || 'light';
+            document.documentElement.setAttribute('data-bs-theme', saved);
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
     @stack('styles')
@@ -111,6 +118,37 @@
                 });
             });
         });
+    </script>
+    <script>
+        // Theme toggle logic
+        (function() {
+            function applyTheme(theme) {
+                document.documentElement.setAttribute('data-bs-theme', theme);
+                localStorage.setItem('sh-theme', theme);
+                var icon = document.getElementById('themeToggleIcon');
+                if (icon) {
+                    icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+                }
+            }
+            // Apply saved/default on load
+            var saved = localStorage.getItem('sh-theme') || 'light';
+            applyTheme(saved);
+
+            document.addEventListener('DOMContentLoaded', function() {
+                var btn = document.getElementById('themeToggleBtn');
+                if (btn) {
+                    // Set initial icon
+                    var current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                    var icon = document.getElementById('themeToggleIcon');
+                    if (icon) icon.className = current === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+
+                    btn.addEventListener('click', function() {
+                        var next = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+                        applyTheme(next);
+                    });
+                }
+            });
+        })();
     </script>
     @stack('scripts')
 </body>

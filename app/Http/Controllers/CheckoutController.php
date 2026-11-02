@@ -7,7 +7,7 @@ use App\Models\InventoryHistory;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
-use App\Services\PesapalService;
+use App\Services\PesajetService;
 use App\Support\DeliveryLocations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -18,9 +18,9 @@ use Illuminate\Support\Str;
 class CheckoutController extends Controller
 {
     public function __construct(
-        protected ?PesapalService $pesapalService = null
+        protected ?PesajetService $pesajetService = null
     ) {
-        $this->pesapalService ??= app(PesapalService::class);
+        $this->pesajetService ??= app(PesajetService::class);
     }
 
     public function index()
@@ -49,15 +49,15 @@ class CheckoutController extends Controller
         }
 
         $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'phone' => 'required|string|max:32',
-            'region' => 'required|string|max:64',
-            'district' => 'required|string|max:128',
-            'area' => 'required|string|max:128',
-            'landmark' => 'required|string|max:255',
-            'address' => 'nullable|string|max:500',
+            'name'          => 'required|string|max:255',
+            'phone'         => 'required|string|max:32',
+            'region'        => 'required|string|max:64',
+            'district'      => 'required|string|max:128',
+            'area'          => 'required|string|max:128',
+            'landmark'      => 'required|string|max:255',
+            'address'       => 'nullable|string|max:500',
             'save_location' => 'nullable|boolean',
-            'payment_method' => 'nullable|string',
+            'payment_method'=> 'nullable|string',
         ]);
 
         if (! DeliveryLocations::isValid($data['region'], $data['district'], $data['area'])) {
@@ -76,26 +76,26 @@ class CheckoutController extends Controller
             $total = $products->sum(fn ($p) => $p->price * (int) ($cart[$p->id]['quantity'] ?? 0));
 
             $order = Order::create([
-                'user_id' => Auth::id(),
-                'total_amount' => $total,
-                'payment_method' => 'Pesapal',
-                'payment_phone' => $data['phone'],
-                'status' => 'pending',
-                'payment_status' => 'pending',
-                'transaction_id' => 'TXN-'.strtoupper(Str::random(12)),
+                'user_id'              => Auth::id(),
+                'total_amount'         => $total,
+                'payment_method'       => 'PesaJet',
+                'payment_phone'        => $data['phone'],
+                'status'               => 'pending',
+                'payment_status'       => 'pending',
+                'transaction_id'       => 'TXN-'.strtoupper(Str::random(12)),
                 'payment_initiated_at' => now(),
-                'shipping_name' => $data['name'],
-                'shipping_address' => $data['address'] ?? null,
-                'shipping_city' => $data['area'],
-                'shipping_region' => $data['region'],
-                'shipping_district' => $data['district'],
-                'shipping_area' => $data['area'],
-                'shipping_landmark' => $data['landmark'],
-                'shipping_phone' => $data['phone'],
+                'shipping_name'        => $data['name'],
+                'shipping_address'     => $data['address'] ?? null,
+                'shipping_city'        => $data['area'],
+                'shipping_region'      => $data['region'],
+                'shipping_district'    => $data['district'],
+                'shipping_area'        => $data['area'],
+                'shipping_landmark'    => $data['landmark'],
+                'shipping_phone'       => $data['phone'],
             ]);
 
             foreach ($products as $product) {
-                $qty = $cart[$product->id]['quantity'];
+                $qty  = $cart[$product->id]['quantity'];
                 $size = $cart[$product->id]['size'] ?? null;
 
                 $stock = $product->stock()->lockForUpdate()->first();
@@ -119,11 +119,11 @@ class CheckoutController extends Controller
                 }
 
                 OrderItem::create([
-                    'order_id' => $order->id,
-                    'product_id' => $product->id,
-                    'size' => $size,
-                    'quantity' => $qty,
-                    'price_at_sale' => $product->price,
+                    'order_id'     => $order->id,
+                    'product_id'   => $product->id,
+                    'size'         => $size,
+                    'quantity'     => $qty,
+                    'price_at_sale'=> $product->price,
                 ]);
 
                 $previous = $stock->quantity;
@@ -138,41 +138,42 @@ class CheckoutController extends Controller
                 $stock->decrement('quantity', $qty);
 
                 InventoryHistory::create([
-                    'product_id' => $product->id,
-                    'previous_quantity' => $previous,
-                    'new_quantity' => $previous - $qty,
-                    'change_amount' => -$qty,
-                    'change_type' => 'sale',
-                    'notes' => 'Order #'.$order->id,
-                    'changed_by' => Auth::id(),
+                    'product_id'        => $product->id,
+                    'previous_quantity'  => $previous,
+                    'new_quantity'       => $previous - $qty,
+                    'change_amount'      => -$qty,
+                    'change_type'        => 'sale',
+                    'notes'             => 'Order #'.$order->id,
+                    'changed_by'         => Auth::id(),
                 ]);
             }
 
             if ($request->boolean('save_location')) {
                 $profile = Auth::user()->profile ?? Auth::user()->profile()->create(['user_id' => Auth::id()]);
                 $profile->update([
-                    'full_name' => $data['name'],
-                    'phone' => $data['phone'],
-                    'delivery_region' => $data['region'],
+                    'full_name'         => $data['name'],
+                    'phone'             => $data['phone'],
+                    'delivery_region'   => $data['region'],
                     'delivery_district' => $data['district'],
-                    'delivery_area' => $data['area'],
+                    'delivery_area'     => $data['area'],
                     'delivery_landmark' => $data['landmark'],
                 ]);
             }
 
-            $pesapalResult = $this->pesapalService->submitOrder($order, [
-                'name' => $data['name'],
-                'phone' => $data['phone'],
-                'email' => Auth::user()->email,
-                'region' => $data['region'],
-                'district' => $data['district'],
-                'area' => $data['area'],
-                'landmark' => $data['landmark'],
+            // Initiate PesaJet STK push — send payment prompt to customer's phone
+            $pesajetResult = $this->pesajetService->initiatePayment($order, [
+                'name'    => $data['name'],
+                'phone'   => $data['phone'],
+                'email'   => Auth::user()->email,
+                'region'  => $data['region'],
+                'district'=> $data['district'],
+                'area'    => $data['area'],
+                'landmark'=> $data['landmark'],
                 'address' => $data['address'] ?? null,
             ]);
 
             $order->update([
-                'pesapal_tracking_id' => $pesapalResult['order_tracking_id'] ?? null,
+                'pesajet_reference' => $pesajetResult['reference'] ?? null,
             ]);
 
             Session::forget('cart');
@@ -181,7 +182,8 @@ class CheckoutController extends Controller
             }
             DB::commit();
 
-            return redirect()->away($pesapalResult['redirect_url']);
+            return redirect()->route('orders.confirmation', $order)
+                ->with('success', 'Payment request sent to your phone. Approve the prompt to complete your order.');
         } catch (\Exception $e) {
             DB::rollBack();
 

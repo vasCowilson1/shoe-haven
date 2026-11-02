@@ -20,12 +20,12 @@ class CheckoutTest extends TestCase
     private function validCheckoutPayload(): array
     {
         return [
-            'name' => 'John Buyer',
-            'phone' => '0777123456',
-            'address' => 'Kampala, Uganda',
-            'region' => 'Central',
+            'name'     => 'John Buyer',
+            'phone'    => '0777123456',
+            'address'  => 'Kampala, Uganda',
+            'region'   => 'Central',
             'district' => 'Kampala',
-            'area' => 'Central Division',
+            'area'     => 'Central Division',
             'landmark' => 'Near Shoprite, Nakumatt Building',
         ];
     }
@@ -42,7 +42,7 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_index_renders_when_cart_has_items(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock(['name' => 'Checkout Shoe']);
 
         $this->actingAs($user)
@@ -50,7 +50,7 @@ class CheckoutTest extends TestCase
             ->get('/checkout')
             ->assertOk()
             ->assertSee('Checkout Shoe')
-            ->assertSee('Continue to Pesapal');
+            ->assertSee('Pay with PesaJet');
     }
 
     public function test_checkout_index_requires_authentication(): void
@@ -64,31 +64,30 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_creates_order_and_clears_cart(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock(['price' => 100000]);
-        $stockBefore = ProductStock::where('product_id', $product->id)->value('quantity');
 
         $response = $this->actingAs($user)
             ->withSession(['cart' => [$product->id => ['quantity' => 2, 'size' => '40']]])
             ->post('/checkout', $this->validCheckoutPayload());
 
         $order = Order::firstOrFail();
-        $response->assertRedirect('https://payments.example.test/checkout');
+        $response->assertRedirect(route('orders.confirmation', $order));
 
         $this->assertDatabaseHas('orders', [
-            'user_id' => $user->id,
-            'total_amount' => 200000,
-            'payment_method' => 'Pesapal',
-            'status' => 'pending',
+            'user_id'        => $user->id,
+            'total_amount'   => 200000,
+            'payment_method' => 'PesaJet',
+            'status'         => 'pending',
             'payment_status' => 'pending',
-            'pesapal_tracking_id' => 'test-tracking-'.$order->id,
+            'pesajet_reference' => 'test-ref-' . $order->id,
         ]);
 
         $this->assertDatabaseHas('order_items', [
-            'product_id' => $product->id,
-            'size' => '40',
-            'quantity' => 2,
-            'price_at_sale' => 100000,
+            'product_id'   => $product->id,
+            'size'         => '40',
+            'quantity'     => 2,
+            'price_at_sale'=> 100000,
         ]);
 
         $this->assertNull(session('cart'));
@@ -96,8 +95,8 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_decrements_stock_and_records_inventory_history(): void
     {
-        $user = User::factory()->create();
-        $product = $this->makeProductWithStock(['price' => 50000], 50);
+        $user      = User::factory()->create();
+        $product   = $this->makeProductWithStock(['price' => 50000], 50);
         $sizeBefore = ProductSizeStock::where('product_id', $product->id)->where('size', '40')->value('quantity');
 
         $this->actingAs($user)
@@ -111,16 +110,16 @@ class CheckoutTest extends TestCase
         );
 
         $this->assertDatabaseHas('inventory_history', [
-            'product_id' => $product->id,
+            'product_id'  => $product->id,
             'change_type' => 'sale',
-            'change_amount' => -3,
-            'changed_by' => $user->id,
+            'change_amount'=> -3,
+            'changed_by'  => $user->id,
         ]);
     }
 
     public function test_checkout_rejects_when_quantity_exceeds_size_stock(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock();
         ProductSizeStock::where('product_id', $product->id)->where('size', '40')->update(['quantity' => 1]);
 
@@ -135,7 +134,7 @@ class CheckoutTest extends TestCase
 
     public function test_checkout_rejects_when_quantity_exceeds_total_stock(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock([], 2);
 
         $response = $this->actingAs($user)
@@ -146,17 +145,18 @@ class CheckoutTest extends TestCase
         $this->assertDatabaseCount('orders', 0);
     }
 
-    public function test_checkout_starts_pesapal_payment_without_client_selected_method(): void
+    public function test_checkout_starts_pesajet_payment_without_client_selected_method(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock();
 
         $response = $this->actingAs($user)
             ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
             ->post('/checkout', $this->validCheckoutPayload());
 
-        $response->assertRedirect('https://payments.example.test/checkout');
-        $this->assertDatabaseHas('orders', ['payment_method' => 'Pesapal']);
+        $order = Order::firstOrFail();
+        $response->assertRedirect(route('orders.confirmation', $order));
+        $this->assertDatabaseHas('orders', ['payment_method' => 'PesaJet']);
     }
 
     public function test_checkout_redirects_to_cart_when_cart_empty(): void
@@ -173,7 +173,7 @@ class CheckoutTest extends TestCase
 
     public function test_order_item_creation_uses_sale_price(): void
     {
-        $user = User::factory()->create();
+        $user    = User::factory()->create();
         $product = $this->makeProductWithStock(['price' => 250000, 'original_price' => 300000]);
 
         $this->actingAs($user)
@@ -181,9 +181,9 @@ class CheckoutTest extends TestCase
             ->post('/checkout', $this->validCheckoutPayload());
 
         $this->assertDatabaseHas('order_items', [
-            'product_id' => $product->id,
-            'quantity' => 1,
-            'price_at_sale' => 250000,
+            'product_id'   => $product->id,
+            'quantity'     => 1,
+            'price_at_sale'=> 250000,
         ]);
     }
 }

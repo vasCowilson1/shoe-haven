@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use App\Services\PesapalService;
+use App\Services\PesajetService;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 
 abstract class TestCase extends BaseTestCase
@@ -11,6 +11,6 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->app->bind(PesapalService::class, FakePesapalService::class);
+        $this->app->bind(PesajetService::class, FakePesajetService::class);
     }
 }

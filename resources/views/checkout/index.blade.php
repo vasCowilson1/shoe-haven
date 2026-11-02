@@ -87,9 +87,28 @@
                     <hr class="text-secondary">
                     <h6 class="fw-bold mb-2">Payment</h6>
                     <p class="text-white-50 small mb-3">
-                        You will continue to Pesapal to securely choose and complete an available payment method.
+                        A payment prompt will be sent to your mobile money phone number above.
+                        Approve it to complete your order.
                     </p>
-                    <button type="submit" class="btn btn-sh-orange w-100 mt-3 btn-lg">Continue to Pesapal</button>
+                    <div class="d-flex gap-3 mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="provider" id="mtn" value="MTN" checked>
+                            <label class="form-check-label" for="mtn">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/New-mtn-logo.jpg/120px-New-mtn-logo.jpg"
+                                     alt="MTN MoMo" style="height:22px;"> MTN MoMo
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="provider" id="airtel" value="Airtel">
+                            <label class="form-check-label" for="airtel">
+                                <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Airtel_logo.svg/120px-Airtel_logo.svg.png"
+                                     alt="Airtel Money" style="height:22px;"> Airtel Money
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-sh-orange w-100 mt-3 btn-lg">
+                        <i class="bi bi-phone me-2"></i>Pay with PesaJet
+                    </button>
                 </form>
             </div>
         </div>

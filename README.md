@@ -16,7 +16,7 @@ Shoe Haven is a Laravel 12 footwear e-commerce application with a customer store
 - PHP 8.2+
 - Composer
 - Node.js 20+
-- SQLite or MySQL
+- PostgreSQL 13+
 
 ## Local setup
 
@@ -24,6 +24,11 @@ Shoe Haven is a Laravel 12 footwear e-commerce application with a customer store
 composer install
 copy .env.example .env
 php artisan key:generate
+```
+
+Create a PostgreSQL database named `shoe_haven` (or update `DB_DATABASE` and the connection settings in `.env`), then run:
+
+```bash
 php artisan migrate --seed
 npm install
 npm run build
@@ -33,7 +38,7 @@ php artisan serve
 
 Open `http://127.0.0.1:8000`.
 
-The database migrations are the source of truth. Use `php artisan migrate:fresh --seed` to reset a local development database.
+The database migrations are the source of truth. Use `php artisan migrate:fresh --seed` to reset a local development database. The automated test suite uses an in-memory SQLite database and does not require PostgreSQL.
 
 ## Pesapal configuration
 

@@ -96,39 +96,9 @@
                             <span style="color: var(--sh-orange);">UGX {{ number_format($total >= 200000 ? $total : $total + 20000) }}</span>
                         </div>
 
-                        <h5 class="fw-bold mb-4 text-white">Delivery Details</h5>
-                        <form action="{{ route('checkout.store') }}" method="POST">
-                            @csrf
-                            <div class="row g-2">
-                                <div class="col-md-6">
-                                    <label class="form-label text-white-50">Full Name</label>
-                                    <input type="text" name="name" class="form-control" value="{{ old('name', auth()->user()->name ?? '') }}" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label text-white-50">Phone Number (MTN / Airtel)</label>
-                                    <input type="tel" name="phone" class="form-control" placeholder="+256 700 000 000" value="{{ old('phone') }}" required>
-                                </div>
-                                <div class="col-12">
-                                    <label class="form-label text-white-50">Delivery Address</label>
-                                    <textarea name="address" class="form-control" rows="2" placeholder="Street, city, landmark" required>{{ old('address') }}</textarea>
-                                </div>
-                            </div>
-                            <hr style="border-color: rgba(255,255,255,0.15);">
-                            <h6 class="fw-bold mb-3 text-white">Payment Method</h6>
-                            <div class="form-check mb-2">
-                                <input class="form-check-input" type="radio" name="payment_method" id="sidebar-mtn" value="mtn" checked>
-                                <label class="form-check-label text-white" for="sidebar-mtn">
-                                    <i class="bi bi-phone"></i> MTN Mobile Money
-                                </label>
-                            </div>
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="radio" name="payment_method" id="sidebar-airtel" value="airtel">
-                                <label class="form-check-label text-white" for="sidebar-airtel">
-                                    <i class="bi bi-phone"></i> Airtel Money
-                                </label>
-                            </div>
-                            <button type="submit" class="btn btn-sh-orange w-100 mt-3 btn-lg">Place Order</button>
-                        </form>
+                        <a href="{{ route('checkout.index') }}" class="btn btn-sh-orange w-100 mt-3 btn-lg">
+                            Continue to Checkout
+                        </a>
                     </div>
                 @endif
                     </div>

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\ProductStock;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Concerns\CreatesShopData;
 use Tests\TestCase;
@@ -104,5 +105,19 @@ class CartFlowTest extends TestCase
         $response->assertOk()
             ->assertSee('Cart Shoe')
             ->assertSee('150,000');
+    }
+
+    public function test_cart_checkout_button_opens_checkout_details_page(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock(['name' => 'Cart Shoe']);
+
+        $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->get('/cart')
+            ->assertOk()
+            ->assertSee(route('checkout.index'), false)
+            ->assertSee('Continue to Checkout')
+            ->assertDontSee('<form action="' . route('checkout.store') . '"', false);
     }
 }

@@ -12,8 +12,10 @@ use App\Support\DeliveryLocations;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class CheckoutController extends Controller
 {
@@ -28,7 +30,7 @@ class CheckoutController extends Controller
         $cart = $this->getCart();
 
         if (empty($cart)) {
-            return redirect()->route('cart.index');
+            return redirect()->route('cart.index')->with('status', 'Your cart is empty. Add an item before checking out.');
         }
 
         $products = Product::whereIn('id', array_keys($cart))->get();
@@ -45,7 +47,7 @@ class CheckoutController extends Controller
         $cart = $this->getCart();
 
         if (empty($cart)) {
-            return redirect()->route('cart.index');
+            return redirect()->route('cart.index')->with('status', 'Your cart is empty. Add an item before checking out.');
         }
 
         $data = $request->validate([
@@ -57,7 +59,7 @@ class CheckoutController extends Controller
             'landmark'      => 'required|string|max:255',
             'address'       => 'nullable|string|max:500',
             'save_location' => 'nullable|boolean',
-            'payment_method'=> 'nullable|string',
+            'provider'      => 'required|in:MTN,Airtel',
         ]);
 
         if (! DeliveryLocations::isValid($data['region'], $data['district'], $data['area'])) {
@@ -70,7 +72,9 @@ class CheckoutController extends Controller
             $products = Product::with(['stock', 'sizeStock'])->whereIn('id', $productIds)->lockForUpdate()->get();
 
             if ($products->count() !== count($productIds)) {
-                throw new \Exception('One or more products in your cart are no longer available.');
+                throw ValidationException::withMessages([
+                    'error' => 'One or more products in your cart are no longer available. Please review your cart.',
+                ]);
             }
 
             $total = $products->sum(fn ($p) => $p->price * (int) ($cart[$p->id]['quantity'] ?? 0));
@@ -100,7 +104,9 @@ class CheckoutController extends Controller
 
                 $stock = $product->stock()->lockForUpdate()->first();
                 if (! $stock) {
-                    throw new \Exception("No stock record for {$product->name}.");
+                    throw ValidationException::withMessages([
+                        'error' => "{$product->name} is no longer available. Please remove it from your cart and try again.",
+                    ]);
                 }
 
                 if ($size) {
@@ -110,12 +116,16 @@ class CheckoutController extends Controller
                         ->lockForUpdate()
                         ->first();
                     if (! $sizeStock || $sizeStock->quantity < $qty) {
-                        throw new \Exception("Insufficient stock for {$product->name} (Size {$size}).");
+                        throw ValidationException::withMessages([
+                            'error' => "There is not enough stock for {$product->name} in size {$size}. Please update your cart.",
+                        ]);
                     }
                 }
 
                 if ($stock->quantity < $qty) {
-                    throw new \Exception("Insufficient stock for {$product->name}.");
+                    throw ValidationException::withMessages([
+                        'error' => "There is not enough stock for {$product->name}. Please update your cart.",
+                    ]);
                 }
 
                 OrderItem::create([
@@ -161,19 +171,40 @@ class CheckoutController extends Controller
             }
 
             // Initiate PesaJet STK push — send payment prompt to customer's phone
-            $pesajetResult = $this->pesajetService->initiatePayment($order, [
-                'name'    => $data['name'],
-                'phone'   => $data['phone'],
-                'email'   => Auth::user()->email,
-                'region'  => $data['region'],
-                'district'=> $data['district'],
-                'area'    => $data['area'],
-                'landmark'=> $data['landmark'],
-                'address' => $data['address'] ?? null,
-            ]);
+            try {
+                $pesajetResult = $this->pesajetService->initiatePayment($order, [
+                    'name'     => $data['name'],
+                    'phone'    => $data['phone'],
+                    'provider' => $data['provider'],
+                    'email'    => Auth::user()->email,
+                    'region'   => $data['region'],
+                    'district' => $data['district'],
+                    'area'     => $data['area'],
+                    'landmark' => $data['landmark'],
+                    'address'  => $data['address'] ?? null,
+                ]);
+            } catch (\Throwable $e) {
+                Log::error('Checkout payment initiation failed', [
+                    'order_id' => $order->id,
+                    'exception' => $e->getMessage(),
+                ]);
+
+                DB::rollBack();
+                Session::put('cart', $cart);
+
+                return back()->withErrors([
+                    'payment' => 'We could not start the mobile-money payment. Your cart has been kept; please check your details and try again.',
+                ])->withInput();
+            }
+
+            $paymentStatus = in_array(strtoupper($pesajetResult['status'] ?? ''), ['FAILED', 'CANCELLED', 'EXPIRED'], true)
+                || empty($pesajetResult['reference'])
+                ? 'failed'
+                : 'pending';
 
             $order->update([
                 'pesajet_reference' => $pesajetResult['reference'] ?? null,
+                'payment_status' => $paymentStatus,
             ]);
 
             Session::forget('cart');
@@ -182,12 +213,27 @@ class CheckoutController extends Controller
             }
             DB::commit();
 
-            return redirect()->route('orders.confirmation', $order)
-                ->with('success', 'Payment request sent to your phone. Approve the prompt to complete your order.');
+            $message = $paymentStatus === 'failed'
+                ? 'The payment request could not be completed. Your order is saved; retry the payment from the order page.'
+                : 'Payment request sent to your phone. Approve the prompt to complete your order.';
+
+            return redirect()->route('orders.confirmation', $order)->with('status', $message);
+        } catch (ValidationException $e) {
+            DB::rollBack();
+            Session::put('cart', $cart);
+
+            throw $e;
         } catch (\Exception $e) {
             DB::rollBack();
 
-            return back()->withErrors(['error' => $e->getMessage()])->withInput();
+            Log::error('Checkout failed unexpectedly', [
+                'user_id' => Auth::id(),
+                'exception' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors([
+                'error' => 'We could not complete checkout. Your cart has been kept; please try again.',
+            ])->withInput();
         }
     }
 

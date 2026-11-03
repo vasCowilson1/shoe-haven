@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\Cart;
 use App\Models\InventoryHistory;
 use App\Models\Order;
 use App\Models\OrderItem;
@@ -27,6 +28,7 @@ class CheckoutTest extends TestCase
             'district' => 'Kampala',
             'area'     => 'Central Division',
             'landmark' => 'Near Shoprite, Nakumatt Building',
+            'provider' => 'MTN',
         ];
     }
 
@@ -37,7 +39,8 @@ class CheckoutTest extends TestCase
         $this->actingAs($user)
             ->withSession(['cart' => []])
             ->get('/checkout')
-            ->assertRedirect('/cart');
+            ->assertRedirect('/cart')
+            ->assertSessionHas('status', 'Your cart is empty. Add an item before checking out.');
     }
 
     public function test_checkout_index_renders_when_cart_has_items(): void
@@ -51,6 +54,113 @@ class CheckoutTest extends TestCase
             ->assertOk()
             ->assertSee('Checkout Shoe')
             ->assertSee('Pay with PesaJet');
+    }
+
+    public function test_pending_payment_confirmation_does_not_claim_order_is_paid(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock();
+
+        $response = $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->post('/checkout', $this->validCheckoutPayload());
+
+        $order = Order::firstOrFail();
+        $response->assertRedirect(route('orders.confirmation', $order));
+
+        $this->actingAs($user)
+            ->get(route('orders.confirmation', $order))
+            ->assertOk()
+            ->assertSee('Payment pending')
+            ->assertSee('Approve the mobile-money prompt sent')
+            ->assertDontSee('Order Confirmed!');
+    }
+
+    public function test_checkout_reports_payment_initiation_failure_and_keeps_cart(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock();
+        $service = \Mockery::mock(\App\Services\PesajetService::class)->makePartial();
+        $service->shouldReceive('initiatePayment')->once()->andThrow(new \RuntimeException('provider secret detail'));
+        $this->app->instance(\App\Services\PesajetService::class, $service);
+
+        $response = $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->post('/checkout', $this->validCheckoutPayload());
+
+        $response->assertSessionHasErrors([
+            'payment' => 'We could not start the mobile-money payment. Your cart has been kept; please check your details and try again.',
+        ])->assertDontSee('provider secret detail');
+        $this->assertSame(
+            1,
+            Cart::forUser($user->id)->items()->where('product_id', $product->id)->value('quantity')
+        );
+        $this->assertDatabaseCount('orders', 0);
+    }
+
+    public function test_checkout_sends_the_selected_mobile_money_provider(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock();
+        $service = \Mockery::mock(\App\Services\PesajetService::class)->makePartial();
+        $service->shouldReceive('initiatePayment')
+            ->once()
+            ->withArgs(fn (Order $order, array $details) => $details['provider'] === 'Airtel')
+            ->andReturn(['reference' => 'airtel-test-ref', 'status' => 'PENDING']);
+        $this->app->instance(\App\Services\PesajetService::class, $service);
+
+        $response = $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->post('/checkout', [...$this->validCheckoutPayload(), 'provider' => 'Airtel']);
+
+        $response->assertRedirect(route('orders.confirmation', Order::firstOrFail()));
+    }
+
+    public function test_failed_payment_initiation_response_displays_retry_state(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock();
+        $service = \Mockery::mock(\App\Services\PesajetService::class)->makePartial();
+        $service->shouldReceive('initiatePayment')
+            ->once()
+            ->andReturn(['reference' => 'failed-test-ref', 'status' => 'FAILED']);
+        $this->app->instance(\App\Services\PesajetService::class, $service);
+
+        $response = $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->post('/checkout', $this->validCheckoutPayload());
+
+        $order = Order::firstOrFail();
+        $response->assertRedirect(route('orders.confirmation', $order));
+        $this->assertSame('failed', $order->payment_status);
+
+        $this->actingAs($user)
+            ->get(route('orders.confirmation', $order))
+            ->assertOk()
+            ->assertSee('Payment was not completed')
+            ->assertSee('Retry Payment');
+    }
+
+    public function test_payment_status_check_updates_the_order_state(): void
+    {
+        $user = User::factory()->create();
+        $product = $this->makeProductWithStock();
+
+        $this->actingAs($user)
+            ->withSession(['cart' => [$product->id => ['quantity' => 1, 'size' => '40']]])
+            ->post('/checkout', $this->validCheckoutPayload());
+
+        $order = Order::firstOrFail();
+
+        $this->actingAs($user)
+            ->getJson(route('orders.pay.status', $order))
+            ->assertOk()
+            ->assertJson([
+                'payment_status' => 'paid',
+                'status_check_failed' => false,
+            ]);
+
+        $this->assertSame('paid', $order->fresh()->payment_status);
     }
 
     public function test_checkout_index_requires_authentication(): void

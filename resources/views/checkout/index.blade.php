@@ -12,7 +12,7 @@
     </div>
 
     @if ($errors->any())
-        <div class="alert alert-danger">
+        <div class="alert alert-danger" role="alert">
             <ul class="mb-0">@foreach ($errors->all() as $e) <li>{{ $e }}</li> @endforeach</ul>
         </div>
     @endif
@@ -92,14 +92,14 @@
                     </p>
                     <div class="d-flex gap-3 mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="provider" id="mtn" value="MTN" checked>
+                            <input class="form-check-input" type="radio" name="provider" id="mtn" value="MTN" required @checked(old('provider', 'MTN') === 'MTN')>
                             <label class="form-check-label" for="mtn">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/New-mtn-logo.jpg/120px-New-mtn-logo.jpg"
                                      alt="MTN MoMo" style="height:22px;"> MTN MoMo
                             </label>
                         </div>
                         <div class="form-check">
-                            <input class="form-check-input" type="radio" name="provider" id="airtel" value="Airtel">
+                            <input class="form-check-input" type="radio" name="provider" id="airtel" value="Airtel" @checked(old('provider') === 'Airtel')>
                             <label class="form-check-label" for="airtel">
                                 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Airtel_logo.svg/120px-Airtel_logo.svg.png"
                                      alt="Airtel Money" style="height:22px;"> Airtel Money

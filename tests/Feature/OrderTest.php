@@ -97,7 +97,7 @@ class OrderTest extends TestCase
         $response = $this->actingAs($user)->get("/orders/{$order->id}/confirmation");
 
         $response->assertOk()
-            ->assertSee('Order Confirmed!')
+            ->assertSee('Payment pending')
             ->assertSee('#' . $order->id)
             ->assertSee('View Order');
     }

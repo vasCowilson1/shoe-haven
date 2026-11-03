@@ -18,7 +18,7 @@
     @endif
 
     <div class="row g-4">
-        <div class="col-lg-7">
+        <div class="col-12">
             <div class="card bg-dark border-0 p-4">
                 <h5 class="fw-bold mb-4">Delivery Details</h5>
                 <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
@@ -113,36 +113,40 @@
             </div>
         </div>
 
-        <div class="col-lg-5">
-            <div class="sh-summary p-4">
-                <h5 class="mb-4">Order Summary</h5>
-                @foreach ($products as $item)
-                    @php $qty = $cart[$item->id]['quantity']; $lineTotal = $item->price * $qty; @endphp
-                    <div class="d-flex justify-content-between align-items-start mb-3">
-                        <div class="d-flex align-items-center gap-2">
-                            <img src="{{ Str::startsWith($item->image, 'http') ? $item->image : asset($item->image) }}"
-                                 alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px;">
-                            <div>
-                                <span class="small fw-medium">{{ $item->name }}</span>
-                                <small class="d-block text-white-50">Qty: {{ $qty }}</small>
+        <div class="col-12">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-9">
+                    <div class="sh-summary p-4">
+                        <h5 class="mb-4">Order Summary</h5>
+                        @foreach ($products as $item)
+                            @php $qty = $cart[$item->id]['quantity']; $lineTotal = $item->price * $qty; @endphp
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div class="d-flex align-items-center gap-2">
+                                    <img src="{{ Str::startsWith($item->image, 'http') ? $item->image : asset($item->image) }}"
+                                         alt="" style="width: 44px; height: 44px; object-fit: cover; border-radius: 6px;">
+                                    <div>
+                                        <span class="small fw-medium">{{ $item->name }}</span>
+                                        <small class="d-block text-white-50">Qty: {{ $qty }}</small>
+                                    </div>
+                                </div>
+                                <span class="fw-medium">UGX {{ number_format($lineTotal) }}</span>
                             </div>
+                        @endforeach
+                        <hr style="border-color: rgba(255,255,255,0.15);">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white-50">Subtotal</span>
+                            <span>UGX {{ number_format($total) }}</span>
                         </div>
-                        <span class="fw-medium">UGX {{ number_format($lineTotal) }}</span>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-white-50">Delivery</span>
+                            <span class="text-success">{{ $total >= 200000 ? 'Free' : 'UGX 20,000' }}</span>
+                        </div>
+                        <hr style="border-color: rgba(255,255,255,0.15);">
+                        <div class="d-flex justify-content-between fw-bold fs-5">
+                            <span>Total</span>
+                            <span style="color: var(--sh-orange);">UGX {{ number_format($total >= 200000 ? $total : $total + 20000) }}</span>
+                        </div>
                     </div>
-                @endforeach
-                <hr style="border-color: rgba(255,255,255,0.15);">
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-white-50">Subtotal</span>
-                    <span>UGX {{ number_format($total) }}</span>
-                </div>
-                <div class="d-flex justify-content-between mb-2">
-                    <span class="text-white-50">Delivery</span>
-                    <span class="text-success">{{ $total >= 200000 ? 'Free' : 'UGX 20,000' }}</span>
-                </div>
-                <hr style="border-color: rgba(255,255,255,0.15);">
-                <div class="d-flex justify-content-between fw-bold fs-5">
-                    <span>Total</span>
-                    <span style="color: var(--sh-orange);">UGX {{ number_format($total >= 200000 ? $total : $total + 20000) }}</span>
                 </div>
             </div>
         </div>

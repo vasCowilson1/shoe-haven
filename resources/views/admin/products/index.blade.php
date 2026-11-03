@@ -66,7 +66,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center py-5"><i class="bi bi-box-seam fs-2 text-muted"></i><p class="text-muted mt-2 mb-0">No products found.</p></td></tr>
+                <tr><td colspan="6" class="text-center py-3"><i class="bi bi-box-seam fs-2 text-muted"></i><p class="text-muted mt-2 mb-0">No products found.</p></td></tr>
             @endforelse
             </tbody>
         </table>

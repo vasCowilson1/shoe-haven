@@ -15,7 +15,7 @@
     </div>
 
     <div class="row g-4">
-        <div class="col-lg-8">
+        <div class="col-12">
             <div class="card bg-dark border-0 mb-4">
                 <div class="card-body">
                     <h6 class="fw-bold mb-3"><i class="bi bi-clock-history me-2"></i>Order Status</h6>
@@ -73,7 +73,9 @@
             </div>
         </div>
 
-        <div class="col-lg-4">
+        <div class="col-12">
+            <div class="row justify-content-center">
+                <div class="col-12 col-lg-10 col-xl-9">
             <div class="card bg-dark border-0 mb-3">
                 <div class="card-header bg-transparent border-secondary py-3">
                     <h5 class="fw-bold mb-0">Order Summary</h5>
@@ -132,6 +134,8 @@
                         <span class="badge bg-{{ $order->payment_status === 'paid' ? 'success' : 'warning' }}">
                             {{ ucfirst($order->payment_status) }}
                         </span>
+                    </div>
+                </div>
                     </div>
                 </div>
             </div>

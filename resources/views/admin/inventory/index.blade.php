@@ -48,7 +48,7 @@
 </td>
 </tr>
 @empty
-<tr><td colspan="5" class="text-center text-muted py-5">No products found.</td></tr>
+<tr><td colspan="5" class="text-center text-muted py-3">No products found.</td></tr>
 @endforelse
 </tbody>
 </table>
@@ -70,7 +70,7 @@
 <td><span class="badge bg-light text-dark text-capitalize">{{ $entry->change_type }}</span></td>
 <td><small class="text-muted">{{ $entry->created_at->format('M d, Y H:i') }}</small></td>
 </tr>
-@empty<tr><td colspan="6" class="text-center text-muted py-5">No stock adjustments recorded.</td></tr>@endforelse
+@empty<tr><td colspan="6" class="text-center text-muted py-3">No stock adjustments recorded.</td></tr>@endforelse
 </tbody>
 </table>
 </div>

@@ -37,7 +37,7 @@
 <td><small class="text-muted">{{ $order->created_at->format('M d, Y') }}<br>{{ $order->created_at->format('H:i') }}</small></td>
 <td class="text-end"><a href="{{ route('admin.orders.show',$order) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-eye me-1"></i>View</a></td>
 </tr>
-@empty<tr><td colspan="8" class="text-center text-muted py-5"><i class="bi bi-inbox fs-2"></i><p class="mb-0 mt-2">No orders found.</p></td></tr>@endforelse
+@empty<tr><td colspan="8" class="text-center text-muted py-3"><i class="bi bi-inbox fs-2"></i><p class="mb-0 mt-2">No orders found.</p></td></tr>@endforelse
 </tbody>
 </table>
 </div>

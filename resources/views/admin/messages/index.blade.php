@@ -32,7 +32,7 @@
                     <td class="text-end"><a href="{{ route('admin.messages.show', $message) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-eye"></i></a></td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center text-muted py-5">No messages found.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-3">No messages found.</td></tr>
             @endforelse
             </tbody>
         </table>

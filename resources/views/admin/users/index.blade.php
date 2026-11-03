@@ -28,7 +28,7 @@
 <td><small class="text-muted">{{ $user->created_at->format('M d, Y') }}</small></td>
 <td class="text-end"><a href="{{ route('admin.users.show',$user) }}" class="btn btn-sm btn-outline-dark"><i class="bi bi-eye me-1"></i>View</a></td>
 </tr>
-@empty<tr><td colspan="6" class="text-center text-muted py-5">No users found.</td></tr>@endforelse
+@empty<tr><td colspan="6" class="text-center text-muted py-3">No users found.</td></tr>@endforelse
 </tbody>
 </table>
 </div>

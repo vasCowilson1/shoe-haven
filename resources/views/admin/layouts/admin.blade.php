@@ -14,7 +14,7 @@
 
         .sh-sidebar {
             width:var(--admin-sidebar); flex:0 0 var(--admin-sidebar); background:var(--sh-black);
-            height:100vh; position:sticky; top:0; z-index:1040; overflow:hidden;
+            height:100vh; position:fixed; top:0; left:0; z-index:1040; overflow:hidden;
             transition:width .25s ease, transform .25s ease;
         }
         .sh-sidebar-inner { height:100%; display:flex; flex-direction:column; min-width:0; }
@@ -52,7 +52,7 @@
         .sh-sidebar-footer { flex:0 0 auto; margin-top:auto; padding:.7rem .75rem; border-top:1px solid rgba(255,255,255,.08); background:rgba(0,0,0,.18); }
         .sh-sidebar-footer .nav-link { height:46px; min-height:46px; }
 
-        .admin-main { min-width:0; flex:1; }
+        .admin-main { min-width:0; flex:1; margin-left:var(--admin-sidebar); transition:margin-left .25s ease; }
         .admin-topbar { height:76px; position:sticky; top:0; z-index:1030; background:#fff; border-bottom:1px solid #e9eaf0; }
         .admin-content { padding:1.25rem; max-width:1700px; margin:0 auto; }
         .admin-page-heading h1 { font-size:1.35rem; font-weight:750; margin:0; }
@@ -79,6 +79,7 @@
 
         @media (min-width:992px) {
             body.sidebar-collapsed .sh-sidebar { width:var(--admin-sidebar-mini); flex-basis:var(--admin-sidebar-mini); }
+            body.sidebar-collapsed .admin-main { margin-left:var(--admin-sidebar-mini); }
             body.sidebar-collapsed .sh-brand { justify-content:center; padding-left:.5rem; padding-right:.5rem; }
             body.sidebar-collapsed .sh-brand-title, body.sidebar-collapsed .sh-brand-sub,
             body.sidebar-collapsed .sh-nav-label, body.sidebar-collapsed .sh-nav .nav-link span,
@@ -92,6 +93,7 @@
         @media (max-width:991.98px) {
             .sh-sidebar { position:fixed; left:0; top:0; transform:translateX(-100%); box-shadow:10px 0 30px rgba(0,0,0,.18); }
             .sh-sidebar.open { transform:translateX(0); }
+            .admin-main { margin-left:0; }
             .sh-sidebar-overlay.show { display:block; position:fixed; inset:0; z-index:1039; background:rgba(0,0,0,.45); }
             .admin-content { padding:.9rem; }
             .admin-search { min-width:0; width:100%; }

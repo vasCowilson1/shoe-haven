@@ -17,8 +17,8 @@
             <a href="{{ route('shop.index') }}" class="btn btn-sh-orange btn-lg">Start Shopping</a>
         </div>
     @else
-        <div class="row g-4">
-            <div class="col-sm-8">
+        <div class="row g-4 align-items-start">
+            <div class="col-12">
                 @foreach ($products as $product)
                     <div class="d-flex align-items-center justify-content-between border-bottom py-3 sh-cart-row">
                         <div class="d-flex align-items-center gap-3">
@@ -54,8 +54,10 @@
                 @endforeach
             </div>
 
-            <div class="col-sm-4">
-                <div class="sh-cart-sidebar">
+            <div class="col-12">
+                <div class="row justify-content-center">
+                    <div class="col-12 col-lg-10 col-xl-9">
+                <div class="sh-cart-sidebar sh-cart-sidebar-centered">
                 @if (!auth()->check())
                     <div class="sh-summary p-4 text-center">
                         <i class="bi bi-person-circle" style="font-size: 3rem; color: rgba(255,255,255,0.3);"></i>
@@ -97,17 +99,19 @@
                         <h5 class="fw-bold mb-4 text-white">Delivery Details</h5>
                         <form action="{{ route('checkout.store') }}" method="POST">
                             @csrf
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Full Name</label>
-                                <input type="text" name="name" class="form-control" value="{{ old('name', auth()->user()->name ?? '') }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Phone Number (MTN / Airtel)</label>
-                                <input type="tel" name="phone" class="form-control" placeholder="+256 700 000 000" value="{{ old('phone') }}" required>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label text-white-50">Delivery Address</label>
-                                <textarea name="address" class="form-control" rows="2" placeholder="Street, city, landmark" required>{{ old('address') }}</textarea>
+                            <div class="row g-2">
+                                <div class="col-md-6">
+                                    <label class="form-label text-white-50">Full Name</label>
+                                    <input type="text" name="name" class="form-control" value="{{ old('name', auth()->user()->name ?? '') }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label text-white-50">Phone Number (MTN / Airtel)</label>
+                                    <input type="tel" name="phone" class="form-control" placeholder="+256 700 000 000" value="{{ old('phone') }}" required>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label text-white-50">Delivery Address</label>
+                                    <textarea name="address" class="form-control" rows="2" placeholder="Street, city, landmark" required>{{ old('address') }}</textarea>
+                                </div>
                             </div>
                             <hr style="border-color: rgba(255,255,255,0.15);">
                             <h6 class="fw-bold mb-3 text-white">Payment Method</h6>
@@ -127,6 +131,7 @@
                         </form>
                     </div>
                 @endif
+                    </div>
                 </div>
             </div>
         </div>

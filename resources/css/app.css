@@ -322,8 +322,12 @@ section .container.py-5 { padding-top: .5rem !important; padding-bottom: .5rem !
 html { scroll-behavior: smooth; }
 
 /* ===== Cart Checkout Sidebar ===== */
-.sh-cart-sidebar { position: sticky; top: 0.2mm; height: calc(100vh - 0.2mm); overflow-y: auto; }
-.sh-cart-sidebar .sh-summary { min-height: 100%; border-radius: 0; }
+.sh-cart-sidebar { position: static; height: auto; overflow: visible; }
+.sh-cart-sidebar .sh-summary { min-height: 0; border-radius: 16px; }
+@media (min-width: 992px) {
+    .sh-cart-sidebar { position: sticky; top: 1rem; align-self: flex-start; }
+    .sh-cart-sidebar-centered { position: static; }
+}
 
 /* ===== Order Cards ===== */
 .sh-order-card { border-radius: 14px; transition: transform .15s, box-shadow .15s; }

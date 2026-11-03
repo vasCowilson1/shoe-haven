@@ -5,7 +5,9 @@
 
 @section('content')
 <div class="row g-4">
-    <div class="col-lg-4">
+    <div class="col-12">
+        <div class="row justify-content-center">
+            <div class="col-12 col-md-8 col-lg-6">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
                 <div class="mx-auto mb-3 d-flex align-items-center justify-content-center rounded-circle text-white fw-bold"
@@ -38,16 +40,18 @@
                 @endif
             </div>
         </div>
+            </div>
+        </div>
     </div>
 
-    <div class="col-lg-8">
+    <div class="col-12">
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white d-flex justify-content-between align-items-center py-3">
                 <h5 class="mb-0 fw-bold"><i class="bi bi-bag me-2"></i>Orders ({{ $user->orders->count() }})</h5>
             </div>
             <div class="card-body p-0">
                 @if ($user->orders->isEmpty())
-                    <div class="text-center text-muted py-5">
+                    <div class="text-center text-muted py-3">
                         <i class="bi bi-inbox" style="font-size: 2.5rem; opacity: 0.3;"></i>
                         <p class="mt-2 mb-0">No orders placed yet.</p>
                     </div>

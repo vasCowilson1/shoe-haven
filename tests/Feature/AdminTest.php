@@ -291,4 +291,16 @@ class AdminTest extends TestCase
 
         $this->actingAs($admin)->get('/admin/users')->assertOk();
     }
+
+    public function test_admin_user_details_page_renders_centered_profile_and_full_width_orders(): void
+    {
+        $admin = $this->makeAdmin();
+        $user = $this->makeRegularUser();
+
+        $this->actingAs($admin)
+            ->get("/admin/users/{$user->id}")
+            ->assertOk()
+            ->assertSee('class="col-12 col-md-8 col-lg-6"', false)
+            ->assertSee('Orders (0)');
+    }
 }

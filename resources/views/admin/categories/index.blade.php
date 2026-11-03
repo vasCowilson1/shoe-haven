@@ -83,7 +83,7 @@
                             </div>
                         </div>
                     @empty
-                        <tr><td colspan="4" class="text-center text-muted py-5">No categories have been created yet.</td></tr>
+                        <tr><td colspan="4" class="text-center text-muted py-3">No categories have been created yet.</td></tr>
                     @endforelse
                     </tbody>
                 </table>

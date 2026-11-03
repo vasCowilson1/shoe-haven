@@ -102,7 +102,7 @@
                         </div>
                     </a>
                 @empty
-                    <div class="text-center text-muted py-5">No orders yet.</div>
+                    <div class="text-center text-muted py-3">No orders yet.</div>
                 @endforelse
             </div>
         </div>
@@ -129,7 +129,7 @@
                     <td class="text-end"><a href="{{ route('admin.products.edit',$product) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a></td>
                 </tr>
             @empty
-                <tr><td colspan="6" class="text-center text-muted py-5">No products yet.</td></tr>
+                <tr><td colspan="6" class="text-center text-muted py-3">No products yet.</td></tr>
             @endforelse
             </tbody>
         </table>

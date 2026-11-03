@@ -92,6 +92,13 @@ class CartController extends Controller
         $cart = $this->getCart();
         $msg = $size ? "{$product->name} (Size {$size}) added to cart" : "{$product->name} added to cart";
 
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $msg,
+                'count' => collect($cart)->sum('quantity'),
+            ]);
+        }
+
         return back()->with('cart_toast', [
             'message' => $msg,
             'count' => collect($cart)->sum('quantity'),

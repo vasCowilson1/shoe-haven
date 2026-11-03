@@ -29,7 +29,7 @@
 
     @include('partials.footer')
 
-    <div id="sh-toast" class="sh-toast" style="display: none;">
+    <div id="sh-toast" class="sh-toast" style="display: none;" role="status" aria-live="polite">
         <div class="sh-toast-icon" id="sh-toast-icon"><i class="bi bi-check-circle-fill"></i></div>
         <div class="sh-toast-body">
             <div class="sh-toast-message" id="sh-toast-message"></div>

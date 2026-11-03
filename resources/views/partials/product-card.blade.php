@@ -50,19 +50,24 @@
                 <span class="count">({{ $product->comments->count() }})</span>
             </div>
         @endif
-        @if ($product->relationLoaded('sizeStock') && $product->sizeStock->isNotEmpty())
-            <div class="sh-card-sizes">
-                @foreach ($product->sizeStock->sortBy('size') as $ss)
-                    <span class="sh-card-size">{{ $ss->size }}</span>
-                @endforeach
-            </div>
-        @endif
         <div class="sh-card-delivery">
             <i class="bi bi-truck"></i> Free Delivery
         </div>
-        <form action="{{ route('cart.add', $product) }}" method="POST" class="sh-card-cart-form">
+        @php
+            $hasSizes = $product->relationLoaded('sizeStock') && $product->sizeStock->isNotEmpty();
+            $availableSizes = $hasSizes ? $product->sizeStock->sortBy('size')->where('quantity', '>', 0) : collect();
+        @endphp
+        <form action="{{ route('cart.add', $product) }}" method="POST" class="sh-card-cart-form js-cart-add-form">
             @csrf
-            <button type="submit" class="sh-card-cart-btn">
+            @if ($hasSizes)
+                <select name="size" class="form-select form-select-sm mb-2" aria-label="Select size for {{ $product->name }}" required>
+                    <option value="">Select size</option>
+                    @foreach ($availableSizes as $ss)
+                        <option value="{{ $ss->size }}">{{ $ss->size }}</option>
+                    @endforeach
+                </select>
+            @endif
+            <button type="submit" class="sh-card-cart-btn" @disabled($hasSizes && $availableSizes->isEmpty())>
                 <i class="bi bi-cart"></i> Add to cart
             </button>
         </form>

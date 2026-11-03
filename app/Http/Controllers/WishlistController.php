@@ -11,7 +11,7 @@ class WishlistController extends Controller
 {
     public function index()
     {
-        $products = Product::with('category')
+        $products = Product::with(['category', 'sizeStock'])
             ->whereIn('id', Wishlist::where('user_id', Auth::id())->pluck('product_id'))
             ->get();
 

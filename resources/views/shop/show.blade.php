@@ -113,7 +113,8 @@
                 </div>
             </div>
 
-            <form action="{{ route('cart.add', $product) }}" method="POST" class="mb-4">
+            @php $availableSizes = $product->sizeStock->where('quantity', '>', 0); @endphp
+            <form action="{{ route('cart.add', $product) }}" method="POST" class="mb-4 js-cart-add-form">
                 @csrf
                 @if ($product->sizeStock->isNotEmpty())
                     <div class="mb-3">
@@ -124,6 +125,7 @@
                                        style="width: 48px; height: 40px; font-size: .85rem; font-weight: 600; transition: all .15s; {{ $ss->quantity === 0 ? 'opacity: .3; pointer-events: none;' : '' }}"
                                        onmouseover="this.style.borderColor='var(--sh-orange)'" onmouseout="this.style.borderColor='#ddd'">
                                     <input type="radio" name="size" value="{{ $ss->size }}" class="d-none"
+                                           @if ($ss->quantity > 0) required @else disabled @endif
                                            onchange="document.querySelectorAll('.size-option').forEach(el => el.style.borderColor='#ddd'); this.closest('label').style.borderColor='var(--sh-orange)'; this.closest('label').style.background='rgba(255,102,0,0.08)'">
                                     <span>{{ $ss->size }}</span>
                                 </label>
@@ -134,7 +136,10 @@
                 <div class="d-flex gap-3 flex-wrap align-items-center">
                     <div class="input-group" style="max-width: 180px;">
                         <input type="number" name="quantity" value="1" min="1" class="form-control bg-dark text-white border-secondary">
-                        <button type="submit" class="btn btn-sh-orange">Add to Cart</button>
+                        <button type="submit" class="btn btn-sh-orange"
+                                @disabled(($product->stock?->quantity ?? 0) < 1 || ($product->sizeStock->isNotEmpty() && $availableSizes->isEmpty()))>
+                            Add to Cart
+                        </button>
                     </div>
                 </div>
             </form>

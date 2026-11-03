@@ -29,6 +29,20 @@ class CartFlowTest extends TestCase
         ], session('cart'));
     }
 
+    public function test_product_can_be_added_through_json_without_a_redirect(): void
+    {
+        $product = $this->makeProductWithStock(['name' => 'Air Max']);
+
+        $this->postJson("/cart/{$product->id}/add", ['quantity' => 2, 'size' => '40'])
+            ->assertOk()
+            ->assertExactJson([
+                'message' => 'Air Max (Size 40) added to cart',
+                'count' => 2,
+            ]);
+
+        $this->assertSame(2, session('cart')[$product->id]['quantity']);
+    }
+
     public function test_product_can_be_added_without_size_when_product_has_no_sizes(): void
     {
         $product = $this->makeProduct();

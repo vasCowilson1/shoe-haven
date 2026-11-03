@@ -64,7 +64,7 @@ class ShopController extends Controller
     {
         $product->load('category', 'stock', 'description', 'sizeStock', 'images');
 
-        $related = Product::with('category')
+        $related = Product::with(['category', 'sizeStock'])
             ->where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
             ->inRandomOrder()
@@ -105,7 +105,7 @@ class ShopController extends Controller
             ->toArray();
 
         $products = !empty($recentIds)
-            ? Product::with('category')->whereIn('id', $recentIds)->get()
+            ? Product::with(['category', 'sizeStock'])->whereIn('id', $recentIds)->get()
                 ->sortBy(fn ($product) => array_search($product->id, $recentIds))->values()
             : collect();
 

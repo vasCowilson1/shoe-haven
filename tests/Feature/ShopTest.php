@@ -26,6 +26,17 @@ class ShopTest extends TestCase
             ->assertSee('Sneakers');
     }
 
+    public function test_product_card_allows_size_selection_when_adding_to_cart(): void
+    {
+        $this->makeProductWithStock(['name' => 'Sized Shoe']);
+
+        $this->get('/shop')
+            ->assertOk()
+            ->assertSee('class="sh-card-cart-form js-cart-add-form"', false)
+            ->assertSee('name="size"', false)
+            ->assertSee('value="40"', false);
+    }
+
     public function test_shop_index_filters_by_category_slug(): void
     {
         $sneakers = $this->makeCategory('Sneakers', 'sneakers');

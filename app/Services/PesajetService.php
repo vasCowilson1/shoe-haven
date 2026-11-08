@@ -93,7 +93,6 @@ class PesajetService
         }
 
         $response = Http::withHeaders($headers)
-            ->withToken($this->apiKey)
             ->timeout($this->timeout)
             ->post("{$this->baseUrl}{$this->collectionPath}", $payload);
 
@@ -131,13 +130,18 @@ class PesajetService
             throw new \RuntimeException('PesaJet API key is not configured.');
         }
 
-        $response = Http::withHeaders([
+        $headers = [
             'X-API-Key' => $this->apiKey,
             'Accept'    => 'application/json',
-        ])
-        ->withToken($this->apiKey)
-        ->timeout($this->timeout)
-        ->get("{$this->baseUrl}/payments/{$transactionId}");
+        ];
+
+        if (! empty($this->apiSecret)) {
+            $headers['X-API-Secret'] = $this->apiSecret;
+        }
+
+        $response = Http::withHeaders($headers)
+            ->timeout($this->timeout)
+            ->get("{$this->baseUrl}/payments/{$transactionId}");
 
         if ($response->failed()) {
             return ['status' => 'UNKNOWN', 'message' => 'Could not verify payment status with PesaJet.'];

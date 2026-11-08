@@ -36,9 +36,9 @@ class PesajetService
      */
     public function initiatePayment(Order $order, array $billingDetails = []): array
     {
-        if (empty($this->apiKey)) {
+        if (empty($this->apiKey) || str_contains($this->apiKey, 'your_actual_api_key')) {
             if ($this->mockFallback || app()->environment('local', 'testing')) {
-                Log::warning('PesaJet API key not configured; using test transaction in local/test environment.');
+                Log::warning('PesaJet API key not configured or is placeholder; using test transaction in local/test environment.');
                 return [
                     'reference'      => 'SIM-' . $order->transaction_id,
                     'transaction_id' => 'TXN-' . $order->id . '-' . time(),

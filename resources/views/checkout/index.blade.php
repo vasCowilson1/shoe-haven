@@ -86,14 +86,6 @@
 
                     <hr class="text-secondary">
                     <h6 class="fw-bold mb-2">Payment</h6>
-                    <div class="alert alert-warning" role="status">
-                        <strong>Online payment is temporarily unavailable while our service is under maintenance.</strong>
-                        You can send your payment directly to either temporary number:
-                        <div class="d-flex flex-wrap gap-3 mt-2">
-                            <a class="alert-link" href="tel:0768233701">0768233701</a>
-                            <a class="alert-link" href="tel:0743034372">0743034372</a>
-                        </div>
-                    </div>
                     <p class="text-white-50 small mb-3">
                         A payment prompt will be sent to your mobile money phone number above.
                         Approve it to complete your order.

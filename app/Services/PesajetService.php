@@ -9,20 +9,24 @@ use Illuminate\Support\Facades\Log;
 class PesajetService
 {
     protected string $apiKey;
+    protected string $apiSecret;
     protected string $webhookSecret;
     protected string $currency;
     protected string $baseUrl;
+    protected string $collectionPath;
     protected int $timeout;
     protected bool $mockFallback;
 
     public function __construct()
     {
-        $this->apiKey        = (string) config('pesajet.api_key', '');
-        $this->webhookSecret = (string) config('pesajet.webhook_secret', '');
-        $this->currency      = (string) config('pesajet.currency', 'UGX');
-        $this->baseUrl       = rtrim((string) config('pesajet.base_url', 'https://payments.pesajet.com/api/v1'), '/');
-        $this->timeout       = (int) config('pesajet.timeout', 30);
-        $this->mockFallback  = (bool) config('pesajet.mock_fallback', false);
+        $this->apiKey         = (string) config('pesajet.api_key', '');
+        $this->apiSecret      = (string) config('pesajet.api_secret', '');
+        $this->webhookSecret  = (string) config('pesajet.webhook_secret', '');
+        $this->currency       = (string) config('pesajet.currency', 'UGX');
+        $this->baseUrl        = rtrim((string) config('pesajet.base_url', 'https://payments.pesajet.com/api/v1'), '/');
+        $this->collectionPath = '/' . ltrim((string) config('pesajet.collection_path', '/payments'), '/');
+        $this->timeout        = (int) config('pesajet.timeout', 30);
+        $this->mockFallback   = (bool) config('pesajet.mock_fallback', false);
     }
 
     /**
@@ -78,14 +82,20 @@ class PesajetService
 
         Log::info('PesaJet initiate payment request', ['order_id' => $order->id, 'payload' => $payload]);
 
-        $response = Http::withHeaders([
+        $headers = [
             'X-API-Key'    => $this->apiKey,
             'Content-Type' => 'application/json',
             'Accept'       => 'application/json',
-        ])
-        ->withToken($this->apiKey)
-        ->timeout($this->timeout)
-        ->post("{$this->baseUrl}/payments", $payload);
+        ];
+
+        if (! empty($this->apiSecret)) {
+            $headers['X-API-Secret'] = $this->apiSecret;
+        }
+
+        $response = Http::withHeaders($headers)
+            ->withToken($this->apiKey)
+            ->timeout($this->timeout)
+            ->post("{$this->baseUrl}{$this->collectionPath}", $payload);
 
         if ($response->failed()) {
             $body = $response->json() ?? [];

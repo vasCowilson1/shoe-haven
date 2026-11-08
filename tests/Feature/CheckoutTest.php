@@ -54,9 +54,8 @@ class CheckoutTest extends TestCase
             ->assertOk()
             ->assertSee('Checkout Shoe')
             ->assertSee('Pay with PesaJet')
-            ->assertSee('Online payment is temporarily unavailable while our service is under maintenance.')
-            ->assertSee('0768233701')
-            ->assertSee('0743034372');
+            ->assertDontSee('0768233701')
+            ->assertDontSee('0743034372');
     }
 
     public function test_pending_payment_confirmation_does_not_claim_order_is_paid(): void

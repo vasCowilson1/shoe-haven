@@ -50,6 +50,8 @@ class CheckoutController extends Controller
             return redirect()->route('cart.index')->with('status', 'Your cart is empty. Add an item before checking out.');
         }
 
+        $providerInput = $request->input('provider') ?? $request->input('payment_method') ?? 'MTN';
+
         $data = $request->validate([
             'name'          => 'required|string|max:255',
             'phone'         => 'required|string|max:32',
@@ -59,8 +61,11 @@ class CheckoutController extends Controller
             'landmark'      => 'required|string|max:255',
             'address'       => 'nullable|string|max:500',
             'save_location' => 'nullable|boolean',
-            'provider'      => 'required|in:MTN,Airtel',
+            'provider'      => 'nullable|string|in:MTN,Airtel,mtn,airtel',
+            'payment_method'=> 'nullable|string',
         ]);
+
+        $data['provider'] = strcasecmp($providerInput, 'Airtel') === 0 ? 'Airtel' : 'MTN';
 
         if (! DeliveryLocations::isValid($data['region'], $data['district'], $data['area'])) {
             return back()->withErrors(['area' => 'Please select a valid delivery location.'])->withInput();

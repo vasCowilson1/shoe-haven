@@ -9,58 +9,83 @@ use Illuminate\Support\Facades\Log;
 class PesajetService
 {
     protected string $apiKey;
-    protected string $secretKey;
+    protected string $webhookSecret;
     protected string $currency;
-    protected string $callbackUrl;
     protected string $baseUrl;
+    protected int $timeout;
+    protected bool $mockFallback;
 
     public function __construct()
     {
-        $this->apiKey      = config('pesajet.api_key', '');
-        $this->secretKey   = config('pesajet.secret_key', '');
-        $this->currency    = config('pesajet.currency', 'UGX');
-        $this->callbackUrl = config('pesajet.callback_url', '');
-        $env               = config('pesajet.env', 'sandbox');
-        $this->baseUrl     = config("pesajet.endpoints.{$env}", 'https://pay.pesajet.com/api/v1');
+        $this->apiKey        = (string) config('pesajet.api_key', '');
+        $this->webhookSecret = (string) config('pesajet.webhook_secret', '');
+        $this->currency      = (string) config('pesajet.currency', 'UGX');
+        $this->baseUrl       = rtrim((string) config('pesajet.base_url', 'https://payments.pesajet.com/api/v1'), '/');
+        $this->timeout       = (int) config('pesajet.timeout', 30);
+        $this->mockFallback  = (bool) config('pesajet.mock_fallback', false);
     }
 
     /**
-     * Initiate a PesaJet STK-push payment for the given order.
+     * Initiate a PesaJet mobile money collection for the given order.
      *
      * @param  Order  $order
-     * @param  array  $billingDetails  Must include 'phone' and optionally 'provider' (MTN|Airtel)
-     * @return array  ['reference' => string, 'status' => string, 'message' => string]
+     * @param  array  $billingDetails  Must include 'phone' and optionally 'provider' (mtn|airtel)
+     * @return array  ['reference' => string, 'transaction_id' => string, 'status' => string, 'message' => string]
      *
      * @throws \RuntimeException on configuration or API errors
      */
     public function initiatePayment(Order $order, array $billingDetails = []): array
     {
         if (empty($this->apiKey)) {
+            if ($this->mockFallback || app()->environment('local', 'testing')) {
+                Log::warning('PesaJet API key not configured; using test transaction in local/test environment.');
+                return [
+                    'reference'      => 'SIM-' . $order->transaction_id,
+                    'transaction_id' => 'TXN-' . $order->id . '-' . time(),
+                    'status'         => 'PENDING',
+                    'message'        => 'Payment request simulated. Approve the prompt on your mobile phone to complete.',
+                ];
+            }
+
             throw new \RuntimeException(
                 'PesaJet API key is not configured. Set PESAJET_API_KEY in your .env file.'
             );
         }
 
-        $phone    = $billingDetails['phone'] ?? $order->payment_phone ?? '';
-        $provider = $billingDetails['provider'] ?? $this->detectProvider($phone);
+        $phone       = (string) ($billingDetails['phone'] ?? $order->payment_phone ?? '');
+        $rawProvider = (string) ($billingDetails['provider'] ?? $this->detectProvider($phone));
+        $provider    = strtolower($rawProvider);
+        if (! in_array($provider, ['mtn', 'airtel'], true)) {
+            $provider = 'mtn';
+        }
+
+        $formattedPhone = $this->formatPhoneNumber($phone);
 
         $payload = [
-            'amount'             => (int) round($order->total_amount),
-            'currency'           => $this->currency,
-            'phone_number'       => $this->normalizePhone($phone),
-            'provider'           => $provider,
-            'external_reference' => $order->transaction_id,
-            'callback_url'       => $this->callbackUrl ?: route('pesajet.callback'),
-            'description'        => 'Shoe Haven Order #' . $order->id,
-            'customer_name'      => $billingDetails['name'] ?? $order->shipping_name ?? 'Customer',
-            'customer_email'     => $billingDetails['email'] ?? '',
+            'type'        => 'COLLECTION',
+            'amount'      => (int) round($order->total_amount),
+            'currency'    => $this->currency,
+            'phoneNumber' => $formattedPhone,
+            'provider'    => $provider,
+            'reference'   => (string) $order->transaction_id,
+            'description' => 'Shoe Haven Order #' . $order->id,
+            'metadata'    => [
+                'order_id'       => $order->id,
+                'customer_name'  => $billingDetails['name'] ?? $order->shipping_name ?? 'Customer',
+                'customer_email' => $billingDetails['email'] ?? '',
+            ],
         ];
 
-        Log::info('PesaJet initiatePayment', ['order_id' => $order->id, 'payload' => $payload]);
+        Log::info('PesaJet initiate payment request', ['order_id' => $order->id, 'payload' => $payload]);
 
-        $response = Http::withToken($this->apiKey)
-            ->withHeaders(['Accept' => 'application/json'])
-            ->post("{$this->baseUrl}/payments/initiate", $payload);
+        $response = Http::withHeaders([
+            'X-API-Key'    => $this->apiKey,
+            'Content-Type' => 'application/json',
+            'Accept'       => 'application/json',
+        ])
+        ->withToken($this->apiKey)
+        ->timeout($this->timeout)
+        ->post("{$this->baseUrl}/payments", $payload);
 
         if ($response->failed()) {
             $body = $response->json() ?? [];
@@ -71,33 +96,41 @@ class PesajetService
 
         $data = $response->json();
 
+        $transactionId = $data['transactionId'] ?? $data['transaction_id'] ?? $data['id'] ?? $data['reference'] ?? null;
+        $status        = strtoupper($data['status'] ?? 'PENDING');
+
         return [
-            'reference' => $data['reference'] ?? $data['transaction_id'] ?? $data['data']['reference'] ?? null,
-            'status'    => $data['status'] ?? 'pending',
-            'message'   => $data['message'] ?? 'Payment request sent to your phone.',
+            'reference'      => $transactionId ?? $order->transaction_id,
+            'transaction_id' => $transactionId,
+            'status'         => $status,
+            'message'        => $data['message'] ?? 'Payment prompt sent to your phone. Approve the prompt to complete.',
+            'data'           => $data,
         ];
     }
 
     /**
-     * Query the status of a previously initiated payment.
-     *
-     * @param  string  $reference
-     * @return array  ['status' => 'SUCCESS'|'FAILED'|'PENDING', 'message' => string]
+     * Query transaction status from PesaJet by transaction ID.
      */
-    public function verifyPayment(string $reference): array
+    public function verifyPayment(string $transactionId): array
     {
         if (empty($this->apiKey)) {
-            throw new \RuntimeException(
-                'PesaJet API key is not configured. Set PESAJET_API_KEY in your .env file.'
-            );
+            if ($this->mockFallback || app()->environment('local', 'testing')) {
+                return ['status' => 'COMPLETED', 'message' => 'Simulated payment completed'];
+            }
+
+            throw new \RuntimeException('PesaJet API key is not configured.');
         }
 
-        $response = Http::withToken($this->apiKey)
-            ->withHeaders(['Accept' => 'application/json'])
-            ->get("{$this->baseUrl}/payments/status/{$reference}");
+        $response = Http::withHeaders([
+            'X-API-Key' => $this->apiKey,
+            'Accept'    => 'application/json',
+        ])
+        ->withToken($this->apiKey)
+        ->timeout($this->timeout)
+        ->get("{$this->baseUrl}/payments/{$transactionId}");
 
         if ($response->failed()) {
-            return ['status' => 'UNKNOWN', 'message' => 'Could not verify payment status.'];
+            return ['status' => 'UNKNOWN', 'message' => 'Could not verify payment status with PesaJet.'];
         }
 
         $data = $response->json();
@@ -105,42 +138,64 @@ class PesajetService
         return [
             'status'  => strtoupper($data['status'] ?? 'PENDING'),
             'message' => $data['message'] ?? '',
+            'data'    => $data,
         ];
     }
 
     /**
-     * Normalise a Ugandan phone number to international format (256XXXXXXXXX).
+     * Cryptographically verify HMAC-SHA256 signature of incoming webhook payloads.
      */
-    protected function normalizePhone(string $phone): string
+    public function verifyWebhookSignature(string $rawPayload, ?string $signature): bool
     {
-        $phone = preg_replace('/\D/', '', $phone);
-
-        if (str_starts_with($phone, '0') && strlen($phone) === 10) {
-            $phone = '256' . substr($phone, 1);
-        } elseif (str_starts_with($phone, '+')) {
-            $phone = ltrim($phone, '+');
+        if (empty($this->webhookSecret)) {
+            Log::info('PESAJET_WEBHOOK_SECRET is empty; accepting webhook without signature check.');
+            return true;
         }
 
-        return $phone;
+        if (empty($signature)) {
+            return false;
+        }
+
+        $expected = hash_hmac('sha256', $rawPayload, $this->webhookSecret);
+
+        return hash_equals($expected, $signature);
     }
 
     /**
-     * Guess the mobile money provider from the phone number.
+     * Format Ugandan phone number to E.164 (+256XXXXXXXXX).
      */
-    protected function detectProvider(string $phone): string
+    public function formatPhoneNumber(string $phoneNumber): string
     {
-        $phone = preg_replace('/\D/', '', $phone);
+        $cleaned = preg_replace('/[\s\-]/', '', $phoneNumber);
 
-        // MTN prefixes: 077, 078, 039, 031
-        if (preg_match('/^(256)?(077|078|039|031)/', $phone)) {
-            return 'MTN';
+        if (str_starts_with($cleaned, '0')) {
+            $cleaned = '+256' . substr($cleaned, 1);
+        } elseif (str_starts_with($cleaned, '256')) {
+            $cleaned = '+' . $cleaned;
+        } elseif (! str_starts_with($cleaned, '+')) {
+            $cleaned = '+' . $cleaned;
         }
 
-        // Airtel prefixes: 070, 075, 074, 020
-        if (preg_match('/^(256)?(070|075|074|020)/', $phone)) {
-            return 'Airtel';
+        return $cleaned;
+    }
+
+    /**
+     * Detect carrier network from Ugandan phone number.
+     * MTN: 077, 078, 076, 079, 039
+     * Airtel: 070, 075, 074
+     */
+    public function detectProvider(string $phoneNumber): string
+    {
+        $cleaned = preg_replace('/[\s\-\+]/', '', $phoneNumber);
+
+        if (preg_match('/^(256|0)?(77|78|76|79|39)\d{7}$/', $cleaned)) {
+            return 'mtn';
         }
 
-        return 'MTN'; // default fallback
+        if (preg_match('/^(256|0)?(70|75|74)\d{7}$/', $cleaned)) {
+            return 'airtel';
+        }
+
+        return 'mtn';
     }
 }

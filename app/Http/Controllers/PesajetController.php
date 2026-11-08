@@ -15,19 +15,34 @@ class PesajetController extends Controller
 
     /**
      * Handle the async webhook callback from PesaJet.
-     * PesaJet POSTs payment result here after the customer approves/rejects on their phone.
+     * PesaJet POSTs payment result here when the customer approves or rejects on their mobile phone.
      */
     public function callback(Request $request)
     {
-        Log::info('PesaJet callback received', $request->all());
+        Log::info('PesaJet callback received', [
+            'payload' => $request->all(),
+            'headers' => $request->headers->all(),
+        ]);
 
-        // Resolve order by pesajet_reference or external_reference / transaction_id
+        // Cryptographically verify signature if secret configured
+        $signature = $request->header('X-Webhook-Signature')
+            ?? $request->header('x-webhook-signature')
+            ?? $request->input('signature');
+
+        if (! $this->pesajetService->verifyWebhookSignature($request->getContent(), $signature)) {
+            Log::warning('PesaJet callback rejected: invalid signature');
+            return response()->json(['message' => 'Invalid signature'], 401);
+        }
+
+        // Support PesaJet reference fields
         $reference = $request->input('reference')
+            ?? $request->input('transactionId')
             ?? $request->input('transaction_id')
-            ?? $request->input('external_reference');
+            ?? $request->input('external_reference')
+            ?? $request->input('providerReference');
 
         if (! $reference) {
-            Log::warning('PesaJet callback missing reference');
+            Log::warning('PesaJet callback missing transaction or order reference');
             return response()->json(['message' => 'Missing reference'], 422);
         }
 
@@ -40,14 +55,15 @@ class PesajetController extends Controller
             return response()->json(['message' => 'Order not found'], 404);
         }
 
-        $status = strtoupper($request->input('status', ''));
+        $status = strtoupper((string) $request->input('status', ''));
+        $event  = (string) $request->input('event', '');
 
         $paymentStatus = match (true) {
-            in_array($status, ['SUCCESS', 'COMPLETED', 'PAID'])   => 'paid',
-            in_array($status, ['FAILED', 'CANCELLED', 'EXPIRED']) => 'failed',
-            $status === 'REFUNDED'                                 => 'refunded',
-            in_array($status, ['PARTIALLY_REFUNDED', 'PARTIAL_REFUND']) => 'partially_refunded',
-            default                                                => 'pending',
+            in_array($status, ['SUCCESS', 'COMPLETED', 'PAID'], true) || $event === 'payment.completed' => 'paid',
+            in_array($status, ['FAILED', 'CANCELLED', 'EXPIRED'], true) || in_array($event, ['payment.failed', 'payment.expired'], true) => 'failed',
+            $status === 'REFUNDED' => 'refunded',
+            in_array($status, ['PARTIALLY_REFUNDED', 'PARTIAL_REFUND'], true) => 'partially_refunded',
+            default => 'pending',
         };
 
         $order->update(['payment_status' => $paymentStatus]);
@@ -56,7 +72,7 @@ class PesajetController extends Controller
             $order->update(['status' => 'processing']);
         }
 
-        Log::info('PesaJet callback processed', [
+        Log::info('PesaJet callback processed successfully', [
             'order_id'       => $order->id,
             'payment_status' => $paymentStatus,
         ]);
@@ -65,7 +81,7 @@ class PesajetController extends Controller
     }
 
     /**
-     * Re-initiate payment for a pending/failed order.
+     * Re-initiate payment for a pending or failed order.
      */
     public function retry(Order $order)
     {
@@ -91,7 +107,7 @@ class PesajetController extends Controller
 
             $order->update([
                 'pesajet_reference' => $result['reference'] ?? $order->pesajet_reference,
-                'payment_status' => $paymentStatus,
+                'payment_status'    => $paymentStatus,
             ]);
 
             return redirect()->route('orders.confirmation', $order)
@@ -100,7 +116,7 @@ class PesajetController extends Controller
                     : 'Payment request sent to your phone. Approve the prompt to complete your order.');
         } catch (\Exception $e) {
             Log::error('PesaJet payment retry failed', [
-                'order_id' => $order->id,
+                'order_id'  => $order->id,
                 'exception' => $e->getMessage(),
             ]);
 
@@ -120,9 +136,9 @@ class PesajetController extends Controller
 
         if (! $order->pesajet_reference) {
             return response()->json([
-                'payment_status' => $order->payment_status,
+                'payment_status'      => $order->payment_status,
                 'status_check_failed' => true,
-                'message' => 'This order has no payment reference to verify.',
+                'message'             => 'This order has no payment reference to verify.',
             ]);
         }
 
@@ -132,9 +148,9 @@ class PesajetController extends Controller
 
             if ($providerStatus === '' || $providerStatus === 'UNKNOWN') {
                 return response()->json([
-                    'payment_status' => $order->payment_status,
+                    'payment_status'      => $order->payment_status,
                     'status_check_failed' => true,
-                    'message' => 'Payment status could not be verified.',
+                    'message'             => 'Payment status could not be verified.',
                 ], 503);
             }
 
@@ -143,7 +159,7 @@ class PesajetController extends Controller
                 'FAILED', 'CANCELLED', 'EXPIRED' => 'failed',
                 'REFUNDED' => 'refunded',
                 'PARTIALLY_REFUNDED', 'PARTIAL_REFUND' => 'partially_refunded',
-                default                         => 'pending',
+                default => 'pending',
             };
 
             if ($paymentStatus !== $order->payment_status) {
@@ -154,19 +170,19 @@ class PesajetController extends Controller
             }
 
             return response()->json([
-                'payment_status' => $paymentStatus,
+                'payment_status'      => $paymentStatus,
                 'status_check_failed' => false,
             ]);
         } catch (\Exception $e) {
             Log::warning('PesaJet payment status verification failed', [
-                'order_id' => $order->id,
+                'order_id'  => $order->id,
                 'exception' => $e->getMessage(),
             ]);
 
             return response()->json([
-                'payment_status' => $order->payment_status,
+                'payment_status'      => $order->payment_status,
                 'status_check_failed' => true,
-                'message' => 'Payment status could not be verified.',
+                'message'             => 'Payment status could not be verified.',
             ], 503);
         }
     }

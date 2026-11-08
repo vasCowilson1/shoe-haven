@@ -80,7 +80,7 @@ class BuyerJourneyTest extends TestCase
 
         $this->get("/orders/{$order->id}/confirmation")
             ->assertOk()
-            ->assertSee('Order Confirmed!')
+            ->assertSee('Payment pending')
             ->assertSee('#' . $order->id);
 
         $this->get('/orders')

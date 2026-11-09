@@ -75,6 +75,46 @@ class ShopTest extends TestCase
             ->assertDontSee('Casual Loafer');
     }
 
+    public function test_shop_index_searches_case_insensitively(): void
+    {
+        $this->makeProductWithStock(['name' => 'Air Pegasus Runner', 'brand' => 'Nike']);
+        $this->makeProductWithStock(['name' => 'Urban High Top', 'brand' => 'Vans']);
+
+        $response = $this->get('/shop?search=pegasus');
+
+        $response->assertOk()
+            ->assertSee('Air Pegasus Runner')
+            ->assertDontSee('Urban High Top');
+    }
+
+    public function test_shop_index_searches_by_brand_and_description(): void
+    {
+        $runningCat = $this->makeCategory('Running', 'running');
+        $shoeA = $this->makeProductWithStock([
+            'name' => 'Speed Cloud',
+            'brand' => 'OnRunning',
+            'category_id' => $runningCat->id,
+        ]);
+        \App\Models\ProductDescription::create([
+            'product_id' => $shoeA->id,
+            'description' => 'Engineered with waterproof membrane for all-weather traction.',
+        ]);
+
+        $shoeB = $this->makeProductWithStock(['name' => 'Canvas Slipon', 'brand' => 'Generic']);
+
+        // Search by description keyword
+        $this->get('/shop?search=waterproof')
+            ->assertOk()
+            ->assertSee('Speed Cloud')
+            ->assertDontSee('Canvas Slipon');
+
+        // Search multi-word across brand and category
+        $this->get('/shop?search=OnRunning+speed')
+            ->assertOk()
+            ->assertSee('Speed Cloud')
+            ->assertDontSee('Canvas Slipon');
+    }
+
     public function test_shop_index_sorts_by_price_ascending(): void
     {
         $this->makeProductWithStock(['name' => 'Cheap Shoe', 'price' => 100000]);

@@ -48,8 +48,56 @@
                         All Products
                     @endif
                 </h2>
-                <span class="text-muted small">{{ $products->total() }} products</span>
+                <span class="text-muted small">{{ $products->total() }} products found</span>
             </div>
+
+            {{-- Shop Search Bar --}}
+            <form action="{{ route('shop.index') }}" method="GET" class="mb-3">
+                @if (request('category')) <input type="hidden" name="category" value="{{ request('category') }}"> @endif
+                @if (request('brand')) <input type="hidden" name="brand" value="{{ request('brand') }}"> @endif
+                @if (request('sort') && request('sort') !== 'latest') <input type="hidden" name="sort" value="{{ request('sort') }}"> @endif
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search" class="form-control border-start-0" placeholder="Search shoes by name, brand, or style..." value="{{ request('search') }}" aria-label="Search shoes">
+                    <button class="btn btn-sh-orange" type="submit">Search</button>
+                    @if (request('search'))
+                        <a href="{{ route('shop.index', request()->only('category', 'brand', 'sort')) }}" class="btn btn-outline-secondary" title="Clear search">
+                            <i class="bi bi-x-lg"></i>
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            @if (request('search') || request('category') || request('brand'))
+                <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                    <span class="small text-muted">Active filters:</span>
+                    @if (request('search'))
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-2 py-1 px-2">
+                            Search: "{{ request('search') }}"
+                            <a href="{{ route('shop.index', request()->only('category', 'brand', 'sort')) }}" class="text-secondary text-decoration-none" title="Remove search filter">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if (request('category'))
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-2 py-1 px-2">
+                            Category: {{ $categories->firstWhere('slug', request('category'))->name ?? request('category') }}
+                            <a href="{{ route('shop.index', request()->only('search', 'brand', 'sort')) }}" class="text-secondary text-decoration-none" title="Remove category filter">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </span>
+                    @endif
+                    @if (request('brand'))
+                        <span class="badge bg-light text-dark border d-inline-flex align-items-center gap-2 py-1 px-2">
+                            Brand: {{ request('brand') }}
+                            <a href="{{ route('shop.index', request()->only('search', 'category', 'sort')) }}" class="text-secondary text-decoration-none" title="Remove brand filter">
+                                <i class="bi bi-x"></i>
+                            </a>
+                        </span>
+                    @endif
+                    <a href="{{ route('shop.index') }}" class="small text-decoration-none ms-1" style="color: var(--sh-orange);">Clear all</a>
+                </div>
+            @endif
 
             {{-- Mobile Filter Bar --}}
             <div class="sh-mobile-filter-bar gap-2 mb-3">
@@ -127,15 +175,25 @@
                     </div>
                 @empty
                     <div class="col-12 text-center text-muted py-5">
-                        <i class="bi bi-search" style="font-size: 2.5rem; opacity: 0.3;"></i>
-                        <p class="mt-3 mb-0">
+                        <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3; color: var(--sh-orange);"></i>
+                        <h5 class="fw-bold mt-3 mb-2 text-dark">No shoes found</h5>
+                        <p class="mb-3">
                             @if (request('search'))
-                                No products match "{{ request('search') }}".
-                                <a href="{{ route('shop.index') }}" class="text-decoration-none d-block mt-2">Clear search</a>
+                                We couldn't find any products matching <strong>"{{ request('search') }}"</strong>.
                             @else
-                                No products found in this category.
+                                No products found in this selection.
                             @endif
                         </p>
+                        <div class="d-flex justify-content-center gap-2 flex-wrap">
+                            <a href="{{ route('shop.index') }}" class="btn btn-sh-orange btn-sm">
+                                View All Shoes
+                            </a>
+                            @if (request('search') && (request('category') || request('brand')))
+                                <a href="{{ route('shop.index', ['search' => request('search')]) }}" class="btn btn-outline-secondary btn-sm">
+                                    Search across all categories
+                                </a>
+                            @endif
+                        </div>
                     </div>
                 @endforelse
             </div>

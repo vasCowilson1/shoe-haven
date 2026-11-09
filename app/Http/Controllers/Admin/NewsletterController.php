@@ -12,8 +12,11 @@ class NewsletterController extends Controller
     {
         $query = NewsletterSubscriber::latest();
 
-        if ($request->filled('search')) {
-            $query->where('email', 'like', '%' . $request->string('search')->toString() . '%');
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $pattern = '%' . strtolower($cleaned) . '%';
+            $query->whereRaw('LOWER(email) LIKE ?', [$pattern]);
         }
 
         if ($request->has('active')) {

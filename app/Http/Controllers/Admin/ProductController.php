@@ -18,11 +18,27 @@ class ProductController extends Controller
     {
         $query = Product::with('category', 'stock');
 
-        if ($request->filled('search')) {
-            $s = $request->string('search');
-            $query->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('brand', 'like', "%{$s}%");
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $words = array_values(array_filter(preg_split('/\s+/', $cleaned)));
+
+            $query->where(function ($q) use ($words, $cleaned) {
+                if (count($words) > 1) {
+                    foreach ($words as $word) {
+                        $pattern = '%' . strtolower($word) . '%';
+                        $q->where(function ($sub) use ($pattern) {
+                            $sub->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                                ->orWhereRaw('LOWER(brand) LIKE ?', [$pattern])
+                                ->orWhereHas('category', fn ($c) => $c->whereRaw('LOWER(name) LIKE ?', [$pattern]));
+                        });
+                    }
+                } else {
+                    $pattern = '%' . strtolower($cleaned) . '%';
+                    $q->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                      ->orWhereRaw('LOWER(brand) LIKE ?', [$pattern])
+                      ->orWhereHas('category', fn ($c) => $c->whereRaw('LOWER(name) LIKE ?', [$pattern]));
+                }
             });
         }
 

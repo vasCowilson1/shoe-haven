@@ -16,12 +16,14 @@ class ContactMessageController extends Controller
             $query->where('is_read', false);
         }
 
-        if ($request->filled('search')) {
-            $search = $request->string('search')->toString();
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('subject', 'like', "%{$search}%");
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $pattern = '%' . strtolower($cleaned) . '%';
+            $query->where(function ($q) use ($pattern) {
+                $q->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(email) LIKE ?', [$pattern])
+                    ->orWhereRaw('LOWER(subject) LIKE ?', [$pattern]);
             });
         }
 

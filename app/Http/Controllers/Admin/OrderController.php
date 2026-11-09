@@ -16,13 +16,21 @@ class OrderController extends Controller
             $query->where('status', $request->string('status'));
         }
 
-        if ($request->filled('search')) {
-            $s = $request->string('search');
-            $query->where(function ($q) use ($s) {
-                $q->where('id', 'like', "%{$s}%")
-                  ->orWhereHas('user', function ($u) use ($s) {
-                      $u->where('name', 'like', "%{$s}%")
-                        ->orWhere('email', 'like', "%{$s}%");
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $pattern = '%' . strtolower($cleaned) . '%';
+            $query->where(function ($q) use ($search, $pattern) {
+                if (is_numeric($search)) {
+                    $q->where('id', (int) $search);
+                }
+                $q->orWhereRaw('LOWER(transaction_id) LIKE ?', [$pattern])
+                  ->orWhere('payment_phone', 'like', "%{$search}%")
+                  ->orWhere('shipping_phone', 'like', "%{$search}%")
+                  ->orWhereRaw('LOWER(shipping_name) LIKE ?', [$pattern])
+                  ->orWhereHas('user', function ($u) use ($pattern) {
+                      $u->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                        ->orWhereRaw('LOWER(email) LIKE ?', [$pattern]);
                   });
             });
         }

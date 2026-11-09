@@ -20,6 +20,14 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNav">
+            <form action="{{ route('shop.index') }}" method="GET" class="d-lg-none mt-3 mb-2" role="search">
+                <div class="input-group">
+                    <input type="search" name="search" class="form-control bg-dark text-white border-secondary" placeholder="Search shoes, brands..." value="{{ request('search') }}" aria-label="Search shoes">
+                    <button class="btn btn-sh-orange" type="submit" aria-label="Search">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+            </form>
             <ul class="navbar-nav mx-auto gap-lg-4">
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('home') ? 'active' : '' }}" href="{{ route('home') }}">Home</a></li>
                 @if (isset($categories))
@@ -30,6 +38,14 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('shop.index') && !request()->filled('category') && !request()->filled('brand') && !request()->filled('search') ? 'active' : '' }}" href="{{ route('shop.index') }}">Shop All</a></li>
             </ul>
             <div class="d-flex align-items-center gap-3 mt-3 mt-lg-0">
+                <form action="{{ route('shop.index') }}" method="GET" class="d-none d-lg-flex" role="search" style="max-width: 200px;">
+                    <div class="input-group input-group-sm">
+                        <input type="search" name="search" class="form-control bg-dark text-white border-secondary" placeholder="Search shoes..." value="{{ request('search') }}" style="border-radius: 6px 0 0 6px;" aria-label="Search shoes">
+                        <button class="btn btn-outline-secondary border-secondary text-white-50" type="submit" style="border-radius: 0 6px 6px 0;" aria-label="Search">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </form>
                 <button id="themeToggleBtn" class="btn btn-sm btn-outline-secondary border-0" aria-label="Toggle theme" title="Toggle light/dark mode" style="color: rgba(255,255,255,0.7); font-size: 1.1rem;">
                     <i class="bi bi-moon-stars-fill" id="themeToggleIcon"></i>
                 </button>

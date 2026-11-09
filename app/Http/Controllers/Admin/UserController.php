@@ -14,11 +14,20 @@ class UserController extends Controller
             ->whereDoesntHave('roles', fn ($role) => $role->where('role', 'admin'))
             ->withCount('orders');
 
-        if ($request->filled('search')) {
-            $s = $request->string('search');
-            $query->where(function ($q) use ($s) {
-                $q->where('name', 'like', "%{$s}%")
-                  ->orWhere('email', 'like', "%{$s}%");
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $pattern = '%' . strtolower($cleaned) . '%';
+            $query->where(function ($q) use ($search, $pattern) {
+                if (is_numeric($search)) {
+                    $q->where('id', (int) $search);
+                }
+                $q->orWhereRaw('LOWER(name) LIKE ?', [$pattern])
+                  ->orWhereRaw('LOWER(email) LIKE ?', [$pattern])
+                  ->orWhereHas('profile', function ($p) use ($search, $pattern) {
+                      $p->where('phone', 'like', "%{$search}%")
+                        ->orWhereRaw('LOWER(full_name) LIKE ?', [$pattern]);
+                  });
             });
         }
 

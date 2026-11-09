@@ -26,12 +26,29 @@ class ShopController extends Controller
             $query->where('brand', $request->string('brand'));
         }
 
-        if ($request->filled('search')) {
-            $search = $request->string('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('brand', 'like', "%{$search}%")
-                  ->orWhereHas('category', fn($c) => $c->where('name', 'like', "%{$search}%"));
+        $search = trim((string) $request->input('search', ''));
+        if ($search !== '') {
+            $cleaned = str_replace(['\\', '%', '_'], ['\\\\', '\\%', '\\_'], $search);
+            $words = array_values(array_filter(preg_split('/\s+/', $cleaned)));
+
+            $query->where(function ($q) use ($words, $cleaned) {
+                if (count($words) > 1) {
+                    foreach ($words as $word) {
+                        $pattern = '%' . strtolower($word) . '%';
+                        $q->where(function ($sub) use ($pattern) {
+                            $sub->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                                ->orWhereRaw('LOWER(brand) LIKE ?', [$pattern])
+                                ->orWhereHas('category', fn ($c) => $c->whereRaw('LOWER(name) LIKE ?', [$pattern]))
+                                ->orWhereHas('description', fn ($d) => $d->whereRaw('LOWER(description) LIKE ?', [$pattern]));
+                        });
+                    }
+                } else {
+                    $pattern = '%' . strtolower($cleaned) . '%';
+                    $q->whereRaw('LOWER(name) LIKE ?', [$pattern])
+                      ->orWhereRaw('LOWER(brand) LIKE ?', [$pattern])
+                      ->orWhereHas('category', fn ($c) => $c->whereRaw('LOWER(name) LIKE ?', [$pattern]))
+                      ->orWhereHas('description', fn ($d) => $d->whereRaw('LOWER(description) LIKE ?', [$pattern]));
+                }
             });
         }
 
@@ -45,7 +62,15 @@ class ShopController extends Controller
             case 'price_desc': $query->orderBy('price', 'desc'); break;
             case 'name_asc': $query->orderBy('name'); break;
             case 'name_desc': $query->orderBy('name', 'desc'); break;
-            default: $query->latest();
+            default:
+                if ($search !== '') {
+                    $exactPattern = '%' . strtolower($search) . '%';
+                    $query->orderByRaw(
+                        'CASE WHEN LOWER(name) LIKE ? THEN 1 WHEN LOWER(brand) LIKE ? THEN 2 ELSE 3 END',
+                        [$exactPattern, $exactPattern]
+                    );
+                }
+                $query->latest();
         }
 
         $products = $query->paginate(30)->withQueryString()->onEachSide(1);
@@ -57,6 +82,7 @@ class ShopController extends Controller
             'activeCategory' => $request->string('category')->toString(),
             'activeBrand' => $request->string('brand')->toString(),
             'currentSort' => $sort,
+            'searchQuery' => $search,
         ]);
     }
 

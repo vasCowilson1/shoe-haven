@@ -110,7 +110,7 @@
                         <i class="bi bi-box-seam fs-4 text-white"></i>
                     </div>
                     <h5 class="fw-bold">Fast Delivery</h5>
-                    <p class="text-muted small mb-0">Free delivery on orders over UGX 200,000. Get your shoes delivered within 2–5 business days anywhere in Uganda.</p>
+                    <p class="text-muted small mb-0">Free delivery on all orders. Get your shoes delivered within 2–5 business days anywhere in Uganda.</p>
                 </div>
             </div>
         </div>

@@ -2,10 +2,21 @@
     $cartCount = \App\Http\Controllers\CartController::itemCount();
 @endphp
 
-<nav class="navbar navbar-expand-lg sh-navbar py-3 sticky-top">
+<nav class="navbar navbar-expand-lg sh-navbar py-2 py-lg-3 sticky-top">
     <div class="container">
         <a class="navbar-brand fs-4" href="{{ route('home') }}">Shoe<span>Haven</span></a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="border-color: rgba(255,255,255,0.3);">
+        <div class="d-flex align-items-center gap-2 ms-auto me-2 d-lg-none">
+            <button class="themeToggleBtn btn btn-sm btn-outline-secondary border-0 p-1" aria-label="Toggle theme" title="Toggle light/dark mode" style="color: rgba(255,255,255,0.85); font-size: 1.15rem;">
+                <i class="bi bi-moon-stars-fill themeToggleIcon"></i>
+            </button>
+            <a href="{{ route('cart.index') }}" class="sh-cart-icon p-1" aria-label="View Cart">
+                <i class="bi bi-cart3"></i>
+                @if ($cartCount > 0)
+                    <span class="sh-cart-badge">{{ $cartCount }}</span>
+                @endif
+            </a>
+        </div>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation" style="border-color: rgba(255,255,255,0.3);">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="mainNav">

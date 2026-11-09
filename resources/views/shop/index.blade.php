@@ -35,8 +35,8 @@
         </div>
     </div>
 
-    <div class="flex-grow-1" style="min-height: 100vh;">
-        <div class="container py-4">
+    <div class="flex-grow-1" style="min-height: 100vh; min-width: 0; max-width: 100%;">
+        <div class="container py-3 py-md-4">
             {{-- Header --}}
             <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 gap-2">
                 <h2 class="fw-bold mb-0 fs-4">

@@ -20,16 +20,16 @@
         <div class="row g-4 align-items-start">
             <div class="col-12">
                 @foreach ($products as $product)
-                    <div class="d-flex align-items-center justify-content-between border-bottom py-3 sh-cart-row">
-                        <div class="d-flex align-items-center gap-3">
+                    <div class="border-bottom py-3 sh-cart-row">
+                        <div class="d-flex align-items-center gap-3 flex-grow-1 min-w-0">
                             <img src="{{ Str::startsWith($product->image, 'http') ? $product->image : asset($product->image) }}" alt="{{ $product->name }}">
-                            <div>
-                                <h6 class="fw-bold mb-1">{{ $product->name }}</h6>
+                            <div class="min-w-0">
+                                <h6 class="fw-bold mb-1 text-truncate">{{ $product->name }}</h6>
                                 <small class="text-muted">UGX {{ number_format($product->price) }} each</small>
                             </div>
                         </div>
 
-                        <div class="d-flex align-items-center gap-4">
+                        <div class="sh-cart-row-controls">
                             <form action="{{ route('cart.update', $product) }}" method="POST" class="d-flex align-items-center gap-2" id="cart-form-{{ $product->id }}">
                                 @csrf
                                 @method('PATCH')
@@ -40,14 +40,14 @@
                                 </div>
                             </form>
 
-                            <div class="fw-bold" style="min-width: 110px; text-align: right;">
+                            <div class="fw-bold sh-cart-price">
                                 UGX {{ number_format($product->line_total) }}
                             </div>
 
                             <form action="{{ route('cart.remove', $product) }}" method="POST">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
+                                <button type="submit" class="btn btn-sm btn-outline-danger" aria-label="Remove item"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </div>
@@ -88,12 +88,12 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-white-50">Delivery</span>
-                            <span class="text-success">{{ $total >= 200000 ? 'Free' : 'UGX 20,000' }}</span>
+                            <span class="text-success">Free</span>
                         </div>
                         <hr style="border-color: rgba(255,255,255,0.15);">
                         <div class="d-flex justify-content-between fw-bold fs-5 mb-4">
                             <span class="text-white">Total</span>
-                            <span style="color: var(--sh-orange);">UGX {{ number_format($total >= 200000 ? $total : $total + 20000) }}</span>
+                            <span style="color: var(--sh-orange);">UGX {{ number_format($total) }}</span>
                         </div>
 
                         <a href="{{ route('checkout.index') }}" class="btn btn-sh-orange w-100 mt-3 btn-lg">

@@ -19,7 +19,7 @@
 
     <div class="row g-4">
         <div class="col-12">
-            <div class="card bg-dark border-0 p-4">
+            <div class="card bg-dark border-0 p-3 p-sm-4">
                 <h5 class="fw-bold mb-4">Delivery Details</h5>
                 <form action="{{ route('checkout.store') }}" method="POST" id="checkout-form">
                     @csrf
@@ -90,7 +90,7 @@
                         A payment prompt will be sent to your mobile money phone number above.
                         Approve it to complete your order.
                     </p>
-                    <div class="d-flex gap-3 mb-3">
+                    <div class="d-flex gap-3 mb-3 flex-wrap">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="provider" id="mtn" value="MTN" required @checked(old('provider', 'MTN') === 'MTN')>
                             <label class="form-check-label" for="mtn">
@@ -116,7 +116,7 @@
         <div class="col-12">
             <div class="row justify-content-center">
                 <div class="col-12 col-lg-10 col-xl-9">
-                    <div class="sh-summary p-4">
+                    <div class="sh-summary p-3 p-sm-4">
                         <h5 class="mb-4">Order Summary</h5>
                         @foreach ($products as $item)
                             @php $qty = $cart[$item->id]['quantity']; $lineTotal = $item->price * $qty; @endphp
@@ -139,12 +139,12 @@
                         </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-white-50">Delivery</span>
-                            <span class="text-success">{{ $total >= 200000 ? 'Free' : 'UGX 20,000' }}</span>
+                            <span class="text-success">Free</span>
                         </div>
                         <hr style="border-color: rgba(255,255,255,0.15);">
                         <div class="d-flex justify-content-between fw-bold fs-5">
                             <span>Total</span>
-                            <span style="color: var(--sh-orange);">UGX {{ number_format($total >= 200000 ? $total : $total + 20000) }}</span>
+                            <span style="color: var(--sh-orange);">UGX {{ number_format($total) }}</span>
                         </div>
                     </div>
                 </div>

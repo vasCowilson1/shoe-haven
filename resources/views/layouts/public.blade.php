@@ -2,7 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="theme-color" content="#14141a">
     <title>@yield('title', config('app.name', 'Shoe Haven'))</title>
@@ -28,6 +28,7 @@
     </main>
 
     @include('partials.footer')
+    @include('partials.bottom-nav')
 
     <div id="sh-toast" class="sh-toast" style="display: none;" role="status" aria-live="polite">
         <div class="sh-toast-icon" id="sh-toast-icon"><i class="bi bi-check-circle-fill"></i></div>
@@ -125,28 +126,24 @@
             function applyTheme(theme) {
                 document.documentElement.setAttribute('data-bs-theme', theme);
                 localStorage.setItem('sh-theme', theme);
-                var icon = document.getElementById('themeToggleIcon');
-                if (icon) {
-                    icon.className = theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
-                }
+                document.querySelectorAll('#themeToggleIcon, .themeToggleIcon').forEach(function(icon) {
+                    icon.className = (theme === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill') + ' ' + (icon.classList.contains('themeToggleIcon') ? 'themeToggleIcon' : '');
+                });
             }
             // Apply saved/default on load
             var saved = localStorage.getItem('sh-theme') || 'light';
             applyTheme(saved);
 
             document.addEventListener('DOMContentLoaded', function() {
-                var btn = document.getElementById('themeToggleBtn');
-                if (btn) {
-                    // Set initial icon
-                    var current = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                    var icon = document.getElementById('themeToggleIcon');
-                    if (icon) icon.className = current === 'dark' ? 'bi bi-sun-fill' : 'bi bi-moon-stars-fill';
+                var current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                applyTheme(current);
 
+                document.querySelectorAll('#themeToggleBtn, .themeToggleBtn').forEach(function(btn) {
                     btn.addEventListener('click', function() {
                         var next = document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
                         applyTheme(next);
                     });
-                }
+                });
             });
         })();
     </script>

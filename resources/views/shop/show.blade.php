@@ -92,7 +92,7 @@
                 {{ $product->description?->description ?? 'Premium quality footwear crafted for comfort and style. Perfect for everyday wear.' }}
             </p>
 
-            <div class="d-flex gap-2 mb-4">
+            <div class="d-flex gap-2 mb-4 flex-wrap">
                 <div class="text-center p-3 rounded-3" style="background: rgba(255,255,255,0.05); min-width: 90px;">
                     <i class="bi bi-box-seam fs-5"></i>
                     <small class="d-block text-white-50">

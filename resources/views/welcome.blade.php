@@ -42,7 +42,7 @@
                                             <div class="sh-add-btn" style="background: var(--sh-orange);"><i class="bi bi-lightning-fill"></i></div>
                                             <div>
                                                 <div class="fw-bold" style="font-size:.85rem;">Free Express Shipping</div>
-                                                <small class="text-muted">On orders over UGX 200,000</small>
+                                                <small class="text-muted">Free delivery on all orders</small>
                                             </div>
                                         </div>
                                     </div>
@@ -83,7 +83,7 @@
             <div class="col-6 col-md-3 item d-flex flex-column align-items-center">
                 <i class="bi bi-truck"></i>
                 <strong>Free Shipping</strong>
-                <small>On orders over UGX 200,000</small>
+                <small>Free delivery on all orders</small>
             </div>
             <div class="col-6 col-md-3 item d-flex flex-column align-items-center">
                 <i class="bi bi-shield-check"></i>

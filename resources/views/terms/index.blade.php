@@ -24,7 +24,7 @@
             <div class="card border-0 shadow-sm mb-3">
                 <div class="card-body">
                     <h5 class="fw-bold"><i class="bi bi-2-circle me-2" style="color: var(--sh-orange);"></i>Shipping & Delivery</h5>
-                    <p class="text-muted mb-0">We deliver within 2–5 business days across Uganda. Free delivery applies to orders over UGX 200,000. Delivery times may vary based on location.</p>
+                    <p class="text-muted mb-0">We deliver within 2–5 business days across Uganda. Free delivery applies to all orders. Delivery times may vary based on location.</p>
                 </div>
             </div>
             <div class="card border-0 shadow-sm mb-3">
